@@ -13,5 +13,6 @@ CREATE TABLE benchmarks (
 	solver TEXT,
 	solve_time INTEGER,
 	node_count INTEGER,
+	solution_id INTEGER,
 	puzzle_id INTEGER
 );
