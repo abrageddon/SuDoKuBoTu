@@ -10,7 +10,7 @@ for difficulty in difficulties:
 	difficulty_dir = difficulty+"/"
 	for filename in os.listdir(PUZZLE_DIR+difficulty):
 		ofile = open(PUZZLE_DIR+difficulty_dir+filename)
-		puzzle = ofile.read()
+		puzzle = '[['+ofile.read()[:-2].replace('\r\n','],[')+']]'
 		c.execute("INSERT INTO puzzles (puzzle,difficulty) VALUES (?,?)",(puzzle,difficulty))
 		ofile.close()
 c.close()
