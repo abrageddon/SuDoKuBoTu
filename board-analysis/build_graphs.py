@@ -8,6 +8,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
+
 def make_graph(variable,filter_string):
 	query = 'SELECT %s FROM puzzles p, benchmarks b, solutions s WHERE p.id = b.puzzle_id AND b.solution_id = s.id AND s.puzzle_id = p.id AND  %s' % (variable,filter_string)
 	print query
@@ -21,6 +22,7 @@ def make_graph(variable,filter_string):
 	plt.ylabel('frequency')
 	plt.title(filter_string)
 	plt.grid(True)
+	filter_string = "".join([x for x in filter_string if x.isalpha() or x.isdigit()])
 	plt.savefig('graph_%s(%s)'% (variable,filter_string))
 	plt.close()
 
