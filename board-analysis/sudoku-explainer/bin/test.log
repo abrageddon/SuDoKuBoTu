@@ -1,0 +1,21 @@
+Analyzing Sudoku #1
+54 Hidden Single
+1 Direct Hidden Pair
+4 Naked Single
+7 Pointing
+1 Claiming
+5 Naked Pair
+1 X-Wing
+2 Hidden Pair
+1 Swordfish
+1 XY-Wing
+1 XYZ-Wing
+1 Forcing X-Chain
+1 Bidirectional Y-Cycle
+11 Forcing Chain
+4 Nishio Forcing Chains
+6 Cell Forcing Chains
+11 Region Forcing Chains
+Hardest technique: Region Forcing Chains
+Difficulty: 8.5
+
