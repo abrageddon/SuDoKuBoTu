@@ -3,6 +3,12 @@ CREATE TABLE puzzles (
 	puzzle TEXT,
 	difficulty TEXT
 );
+CREATE TABLE puzzle_clues (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	puzzle_id INTEGER,
+	clue_index INTEGER,
+	clue INTEGER
+);
 CREATE TABLE solutions (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	puzzle_id INTEGER,

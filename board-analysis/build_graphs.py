@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 
 
 def make_graph(variable,filter_string):
-	query = 'SELECT %s FROM puzzles p, benchmarks b, solutions s WHERE p.id = b.puzzle_id AND b.solution_id = s.id AND s.puzzle_id = p.id AND  %s' % (variable,filter_string)
+	query = 'SELECT %s FROM puzzle_clues pc, puzzles p, benchmarks b, solutions s WHERE pc.puzzle_id = p.id AND p.id = b.puzzle_id AND b.solution_id = s.id AND s.puzzle_id = p.id AND  %s' % (variable,filter_string)
 	print query
 	conn = sqlite3.connect('sudoku.db')
 	c = conn.cursor()
@@ -40,7 +40,7 @@ for o,v in opts:
 		one_for_each_diff = True
 
 if one_for_each_diff:
-	[make_graph(variable,"%s AND difficulty = '%s'" % (filter_string,d)) for d in ['Easy','Medium','Hard','Insane'] ]
+	[make_graph(variable," difficulty = '%s' AND %s" % (d,filter_string)) for d in ['Easy','Medium','Hard','Insane'] ]
 else:
 	make_graph(variable,filter_string)	
 
