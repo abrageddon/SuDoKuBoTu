@@ -3,6 +3,18 @@ CREATE TABLE puzzles (
 	puzzle TEXT,
 	difficulty TEXT
 );
+CREATE TABLE explainer_stats (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	puzzle_id INTEGER,
+	hardest_rule TEXT,
+	difficulty FLOAT
+);
+CREATE TABLE rules (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	puzzle_id INTEGER,
+	rule_string TEXT,
+	rule_count INTEGER
+);
 CREATE TABLE puzzle_clues (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	puzzle_id INTEGER,
