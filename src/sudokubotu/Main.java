@@ -1,14 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
-
-/*
- * MainWindow.java
- *
- * Created on Mar 30, 2011, 6:43:07 PM
- */
-package sudokubotu;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -65,6 +54,29 @@ public class Main extends javax.swing.JFrame {
         }
     }
 
+    private void solveBoard() {
+    	Sudoku game;
+		SudokuSquare [][]board;
+		int n = currentBoard.getN();
+		int tries =0;
+		do{
+			game = new Sudoku();
+			board  = new SudokuSquare[n][n];
+			for(int i = 0;i<n; i++)
+				for(int j = 0; j<n; j++)
+					if(board[i][j] == null)
+						board[i][j] = new SudokuSquare();
+			tries++;
+			}while(!game.Solve(board, new Cell(n,0,0)));
+		for(int i = 0;i<n; i++)
+			for(int j = 0; j<n; j++)
+				currentBoard.getBoard()[i][j].setValue(board[i][j].num);
+		for (int i = 0; i < currentBoard.getZonesInRow(); i++) {
+            SDKZones[i].setLayout(new java.awt.GridLayout(currentBoard.getZonesInRow(), currentBoard.getZonesInRow()));
+        }
+        redrawBoard();
+		
+	}
     private void clearBoard() {
         // clear to blank board
         if (editBoard.isSelected()){
@@ -126,8 +138,12 @@ public class Main extends javax.swing.JFrame {
         });
 
         solveButton.setText("Solve");
-        solveButton.setEnabled(false);
-
+        solveButton.setEnabled(true);
+        solveButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+            	solveButtonActionPreformed(evt);
+            }
+        });
         checkButton.setText("Check");
         checkButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -261,8 +277,10 @@ public class Main extends javax.swing.JFrame {
     private void clearButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clearButtonActionPerformed
         clearBoard();
     }//GEN-LAST:event_clearButtonActionPerformed
-
-    private void checkButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkButtonActionPerformed
+    private void solveButtonActionPreformed(java.awt.event.ActionEvent evt){
+    	solveBoard();
+    }
+	private void checkButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkButtonActionPerformed
         checkBoard();
     }//GEN-LAST:event_checkButtonActionPerformed
 

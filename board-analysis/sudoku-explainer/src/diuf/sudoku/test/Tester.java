@@ -10,6 +10,7 @@ import java.util.*;
 
 import diuf.sudoku.*;
 import diuf.sudoku.solver.*;
+import diuf.sudoku.solver.checks.BruteForceAnalysis;
 
 
 public class Tester {
@@ -32,13 +33,16 @@ public class Tester {
             reader = new LineNumberReader(reader0);
             Writer writer0 = new FileWriter(logFile);
             BufferedWriter writer1 = new BufferedWriter(writer0);
+            BruteForceAnalysis bfa = new BruteForceAnalysis(false);
             writer = new PrintWriter(writer1);
             String line = reader.readLine();
+            int puzzlesSolved = 0;
             while (line != null) {
+            	String[] temp = line.split(",");
+            	String puzzleId = temp[0];
+            	line = temp[1];
                 line = line.trim();
                 if (line.length() >= 81) {
-                    writer.println("Analyzing Sudoku #" + reader.getLineNumber());
-                    System.out.println("Analyzing Sudoku #" + reader.getLineNumber());
                     Grid grid = new Grid();
                     for (int i = 0; i < 81; i++) {
                         char ch = line.charAt(i);
@@ -50,6 +54,8 @@ public class Tester {
                     Solver solver = new Solver(grid);
                     solver.rebuildPotentialValues();
                     try {
+                    	if ( bfa.getCountSolutions(grid) > 1)
+                    		throw new UnsupportedOperationException("Invalid number of solutions");
                         Map<Rule,Integer> rules = solver.solve(null);
                         Map<String,Integer> ruleNames = solver.toNamedList(rules);
                         double difficulty = 0;
@@ -60,25 +66,20 @@ public class Tester {
                                 hardestRule = rule.getName();
                             }
                         }
+                        writer.println(String.format("INSERT INTO explainer_stats (puzzle_id,hardest_rule,difficulty) VALUES (%s,'%s',%f)",puzzleId,hardestRule,difficulty));
                         for (String rule : ruleNames.keySet()) {
                             int count = ruleNames.get(rule);
-                            writer.println(Integer.toString(count) + " " + rule);
-                            System.out.println(Integer.toString(count) + " " + rule);
+                            writer.println(String.format("INSERT INTO rules (puzzle_id,rule_string,rule_count) VALUES (%s,'%s',%s)",puzzleId,rule,Integer.toString(count)));
                         }
-                        writer.println("Hardest technique: " + hardestRule);
-                        System.out.println("Hardest technique: " + hardestRule);
-                        writer.println("Difficulty: " + difficulty);
-                        System.out.println("Difficulty: " + difficulty);
                     } catch (UnsupportedOperationException ex) {
-                        writer.println("Failed !");
-                        System.out.println("Failed !");
+                        //writer.println(String.format("INSERT INTO explainer_stats (puzzle_id,hardest_rule,difficulty) VALUES (%s,'%s',%f)",puzzleId,"fail",null));
                     }
-                    writer.println();
-                    System.out.println();
                     writer.flush();
                 } else
                     System.out.println("Skipping incomplete line: " + line);
                 line = reader.readLine();
+                
+				System.out.println("Puzzles Solved: "+(puzzlesSolved++));
             }
             writer.close();
             reader.close();
