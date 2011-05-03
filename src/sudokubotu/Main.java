@@ -66,18 +66,24 @@ public class Main extends javax.swing.JFrame {
     }
 
     private void clearBoard() {
-        // TODO clear to loaded game
+        // clear to blank board
         if (editBoard.isSelected()){
-            currentBoard = new SDKBoard(currentBoard.getN());
+            currentBoard.createBoard(currentBoard.getN());
+            initBoard();
+            BoardBack.updateUI();
+        } else {
+            // clear to game board
             for (int row = 0; row < currentBoard.getN(); row++) {
                 for (int col = 0; col < currentBoard.getN(); col++) {
-                    SDKSquares[row][col].setBackground(Color.white);
+                    if(currentBoard.setBoardValue(row, col, 0)){
+                        SDKSquares[row][col].setBackground(Color.white);
+                    }else{
+                        SDKSquares[row][col].setBackground(Color.GRAY);
+                    }
                 }
             }
-            redrawBoard();
-        } else {
-            // TODO clear to game board
         }
+        redrawBoard();
     }
 
     /** This method is called from within the constructor to
@@ -95,6 +101,7 @@ public class Main extends javax.swing.JFrame {
         checkButton = new javax.swing.JButton();
         scrollBackPane = new javax.swing.JScrollPane();
         BoardBack = new javax.swing.JPanel();
+        generateButton = new javax.swing.JButton();
         jMenuBar1 = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
         newBoard = new javax.swing.JMenuItem();
@@ -135,6 +142,13 @@ public class Main extends javax.swing.JFrame {
         BoardBack.setPreferredSize(new java.awt.Dimension(300, 300));
         BoardBack.setLayout(new java.awt.GridLayout(3, 3));
         scrollBackPane.setViewportView(BoardBack);
+
+        generateButton.setText("Generate");
+        generateButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                generateButtonActionPerformed(evt);
+            }
+        });
 
         fileMenu.setText("File");
 
@@ -221,11 +235,13 @@ public class Main extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addComponent(clearButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(generateButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(solveButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(checkButton)
                 .addGap(383, 383, 383))
-            .addComponent(scrollBackPane, javax.swing.GroupLayout.DEFAULT_SIZE, 655, Short.MAX_VALUE)
+            .addComponent(scrollBackPane, javax.swing.GroupLayout.DEFAULT_SIZE, 721, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -233,7 +249,8 @@ public class Main extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(clearButton)
                     .addComponent(solveButton)
-                    .addComponent(checkButton))
+                    .addComponent(checkButton)
+                    .addComponent(generateButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(scrollBackPane, javax.swing.GroupLayout.DEFAULT_SIZE, 422, Short.MAX_VALUE))
         );
@@ -308,6 +325,10 @@ public class Main extends javax.swing.JFrame {
         
     }//GEN-LAST:event_editBoardActionPerformed
 
+    private void generateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_generateButtonActionPerformed
+        // TODO generateButton
+    }//GEN-LAST:event_generateButtonActionPerformed
+
 
 
     private void SDKSquaresFocusGained(java.awt.event.FocusEvent evt) {
@@ -337,6 +358,7 @@ public class Main extends javax.swing.JFrame {
     private javax.swing.JMenuItem exitSDK;
     private javax.swing.JFileChooser fileBrowser;
     private javax.swing.JMenu fileMenu;
+    private javax.swing.JButton generateButton;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JMenuItem newBoard;
     private javax.swing.JMenuItem openBoard;
@@ -395,6 +417,9 @@ public class Main extends javax.swing.JFrame {
                 if(currentBoard.isSquareLocked(row,col)){
                     SDKSquares[row][col].setEditable(false);
                     SDKSquares[row][col].setBackground(Color.GRAY);
+                }else{
+                    SDKSquares[row][col].setEditable(true);
+                    SDKSquares[row][col].setBackground(Color.WHITE);
                 }
 
 

@@ -37,6 +37,11 @@ public class SDKBoard {
         createBoard(n);
     }
 
+    public SDKBoard(SDKSquare[][] newBoard) {
+        board = newBoard;
+        n = newBoard.length;
+    }
+
     public SDKSquare[][] getBoard() {
         return board;
     }
@@ -261,7 +266,7 @@ public class SDKBoard {
                     createBoard(n);
                 }
 
-                // TODO lock loaded non-zero values
+                // lock loaded non-zero values
                 for (int i = 0; i < col; i++) {
                     setBoardValue(row, i, rowList.pop());
                     if(getBoardValue(row, i) != 0){
@@ -286,4 +291,8 @@ public class SDKBoard {
     boolean isSquareLocked(int row, int col) {
         return board[row][col].isLocked();
     }
+    void setSquareLock(int row, int col, boolean value){
+        board[row][col].setLocked(value);
+    }
+
 }
