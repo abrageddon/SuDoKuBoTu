@@ -7,7 +7,6 @@ import java.awt.Point;
 import java.io.File;
 import java.util.Set;
 import javax.swing.BorderFactory;
-import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -73,7 +72,7 @@ public class Main extends javax.swing.JFrame {
             // clear to game board
             for (int row = 0; row < currentBoard.getN(); row++) {
                 for (int col = 0; col < currentBoard.getN(); col++) {
-                    if (currentBoard.setBoardValue(row, col, 0)) {
+                    if (currentBoard.setSquareValue(row, col, 0)) {
                         SDKSquares[row][col].setBackground(Color.white);
                     } else {
                         SDKSquares[row][col].setBackground(Color.GRAY);
@@ -477,9 +476,9 @@ public class Main extends javax.swing.JFrame {
         for (int row = 0; row < currentBoard.getN(); row++) {
             for (int col = 0; col < currentBoard.getN(); col++) {
                 SDKSquares[row][col].setText(
-                        currentBoard.getBoardValue(row, col) == 0
+                        currentBoard.getSquareValue(row, col) == 0
                         ? ""
-                        : currentBoard.getBoardValue(row, col).toString());//hide zeros as blanks
+                        : currentBoard.getSquareValue(row, col).toString());//hide zeros as blanks
             }
         }
     }
@@ -490,17 +489,17 @@ public class Main extends javax.swing.JFrame {
             for (int col = 0; col < currentBoard.getN(); col++) {
                 try {
                     if (!SDKSquares[row][col].getText().equals("")) {
-                        currentBoard.setBoardValue(row, col, Integer.valueOf(SDKSquares[row][col].getText()));
+                        currentBoard.setSquareValue(row, col, Integer.valueOf(SDKSquares[row][col].getText()));
                     } else {
-                        currentBoard.setBoardValue(row, col, 0);
+                        currentBoard.setSquareValue(row, col, 0);
                     }
                 } catch (NumberFormatException e) {
                     // invalid input handling
                 }
                 SDKSquares[row][col].setText(
-                        currentBoard.getBoardValue(row, col) == 0
+                        currentBoard.getSquareValue(row, col) == 0
                         ? ""
-                        : currentBoard.getBoardValue(row, col).toString());//hide zeros as blanks
+                        : currentBoard.getSquareValue(row, col).toString());//hide zeros as blanks
 
             }
         }
@@ -541,6 +540,7 @@ public class Main extends javax.swing.JFrame {
             File file = fileBrowser.getSelectedFile();
 
             System.out.print("Opening: " + file.getName() + "." + "\n");
+            currentBoard = new SDKBoard();
             currentBoard.loadBoard(file);
 
             for (JPanel panel : SDKZones) {
@@ -564,7 +564,7 @@ public class Main extends javax.swing.JFrame {
         if (currentBoard.conflictedSquares().isEmpty()) {
             for (int row = 0; row < currentBoard.getN(); row++) {
                 for (int col = 0; col < currentBoard.getN(); col++) {
-                    if (currentBoard.getBoardValue(row, col) == 0) {
+                    if (currentBoard.getSquareValue(row, col) == 0) {
                         currentBoard.setSquareLock(row, col, false);
                     } else {
                         currentBoard.setSquareLock(row, col, true);

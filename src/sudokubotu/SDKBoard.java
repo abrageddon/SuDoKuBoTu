@@ -30,22 +30,35 @@ public class SDKBoard {
 
     public SDKBoard(int n) {
         createBoard(n);
+        updateConstraints();
     }
 
     public SDKBoard(SDKSquare[][] newBoard) {
         board = newBoard;
         n = newBoard.length;
+        updateConstraints();
     }
 
     public SDKSquare[][] copyBoard() {
-        return board.clone();
+        SDKSquare[][] copy = new SDKSquare[getN()][getN()];
+        for (int row = 0; row < getN(); row++) {
+            for (int col = 0; col < getN(); col++) {
+                copy[row][col] = new SDKSquare(board[row][col].getValue()
+                        , board[row][col].isLocked());
+                for (int posVal : board[row][col].getPossible()){
+                    copy[row][col].addPossible(posVal);
+                }
+            }
+        }
+
+        return copy;
     }
 
-    public Integer getBoardValue(Integer row, Integer col) {
+    public Integer getSquareValue(Integer row, Integer col) {
         return board[row][col].getValue();
     }
 
-    public boolean setBoardValue(Integer row, Integer col, Integer v) {
+    public boolean setSquareValue(Integer row, Integer col, Integer v) {
         if (row >= 0 && row < n
                 && col >= 0 && col < n
                 && v >= 0 && v <= n
@@ -225,7 +238,7 @@ public class SDKBoard {
                     if (col != 0) {
                         out.print(",");
                     }
-                    out.print(getBoardValue(row, col).toString());
+                    out.print(getSquareValue(row, col).toString());
                 }
                 out.println();
             }
@@ -269,8 +282,8 @@ public class SDKBoard {
 
                 // lock loaded non-zero values
                 for (int i = 0; i < col; i++) {
-                    setBoardValue(row, i, rowList.pop());
-                    if (getBoardValue(row, i) != 0) {
+                    setSquareValue(row, i, rowList.pop());
+                    if (getSquareValue(row, i) != 0) {
                         board[row][i].setLocked(true);
                     }
                 }
@@ -295,5 +308,87 @@ public class SDKBoard {
 
     void setSquareLock(int row, int col, boolean value) {
         board[row][col].setLocked(value);
+    }
+
+    @Override
+    public String toString() {
+        String out = "";
+
+        for (int col = 0; col < getN(); col++) {
+            for (int row = 0; row < getN(); row++) {
+                out += getSquareValue(row, col) + " ";
+            }
+            out += "\n";
+        }
+
+        return out;
+    }
+
+    public final void updateConstraints() {
+        // remove new values from all constraints
+        for (int row = 0; row < getN(); row++) {
+            for (int col = 0; col < getN(); col++) {
+                if (!isSquareLocked(row, col)) {
+                    for (int i = 1; i <= getN(); i++) {
+                        //initalize possible values
+                        board[row][col].addPossible(i);
+                    }
+                    //DEBUG
+                    System.out.println("("+row+","+col+")POS:"+board[row][col].getPossible());
+
+
+                    //DEBUG
+//                    System.out.println("("+row+","+col+")CON:"+getConstraints(row, col));
+
+                    for (Integer usedVal : getConstraints(row, col)) {
+                        //remove direct conflicts
+                        board[row][col].removePossible(usedVal); 
+                    }
+                    //DEBUG
+                    System.out.println("("+row+","+col+")POS:"+board[row][col].getPossible());
+
+                }
+            }
+        }
+    }
+
+    public HashSet<Integer> getConstraints(int row, int col) {
+        // Returns a set of the numbers that square (row,col) can not be
+
+        HashSet<Integer> cantBeValues = new HashSet<Integer>();
+
+        // check only non set values
+        if (!isSquareLocked(row, col)) {
+
+            // get values in zone
+            HashMap<Point, Integer> boardZone = getBoardZone(identifyZone(row, col));
+            for (int value : boardZone.values()) {
+                if (value != 0) {
+                    cantBeValues.add(value);
+                }
+            }
+
+            // get values in row
+            HashMap<Point, Integer> boardRow = getBoardRow(row);
+            for (int value : boardRow.values()) {
+                if (value != 0) {
+                    cantBeValues.add(value);
+                }
+            }
+
+            // get values in col
+            HashMap<Point, Integer> boardCol = getBoardCol(col);
+            for (int value : boardCol.values()) {
+                if (value != 0) {
+                    cantBeValues.add(value);
+                }
+            }
+        }
+
+        return cantBeValues;
+    }
+
+    HashSet<Integer> getSquarePossible(int x, int y) {
+        return board[x][y].getPossible();
     }
 }
