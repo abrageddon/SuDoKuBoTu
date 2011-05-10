@@ -21,7 +21,6 @@ public class SDKBoard {
 
     // this class holds all the information for a sudoku board
     //
-    private int n;
     private SDKSquare[][] board;
 
     public SDKBoard() {
@@ -34,8 +33,16 @@ public class SDKBoard {
     }
 
     public SDKBoard(SDKSquare[][] newBoard) {
-        board = newBoard;
-        n = newBoard.length;
+        board = new SDKSquare[newBoard.length][newBoard.length];
+        for (int row = 0; row < getN(); row++) {
+            for (int col = 0; col < getN(); col++) {
+                board[row][col] = new SDKSquare(newBoard[row][col].getValue()
+                        , newBoard[row][col].isLocked());
+                for (int posVal : newBoard[row][col].getPossible()) {
+                    board[row][col].addPossible(posVal);
+                }
+            }
+        }
         updateConstraints();
     }
 
@@ -43,9 +50,8 @@ public class SDKBoard {
         SDKSquare[][] copy = new SDKSquare[getN()][getN()];
         for (int row = 0; row < getN(); row++) {
             for (int col = 0; col < getN(); col++) {
-                copy[row][col] = new SDKSquare(board[row][col].getValue()
-                        , board[row][col].isLocked());
-                for (int posVal : board[row][col].getPossible()){
+                copy[row][col] = new SDKSquare(board[row][col].getValue(), board[row][col].isLocked());
+                for (int posVal : board[row][col].getPossible()) {
                     copy[row][col].addPossible(posVal);
                 }
             }
@@ -59,9 +65,9 @@ public class SDKBoard {
     }
 
     public boolean setSquareValue(Integer row, Integer col, Integer v) {
-        if (row >= 0 && row < n
-                && col >= 0 && col < n
-                && v >= 0 && v <= n
+        if (row >= 0 && row < getN()
+                && col >= 0 && col < getN()
+                && v >= 0 && v <= getN()
                 && !board[row][col].isLocked()) {
             this.board[row][col].setValue(v);
             return true;
@@ -72,16 +78,15 @@ public class SDKBoard {
     /**
      * @return the n size of the board, must be a square
      */
-    public int getN() {
-        return n;
+    public final int getN() {
+        return board.length;
     }
 
     public final void createBoard(Integer newN) {
         if (newN % ((int) Math.sqrt(newN)) == 0) {
-            this.n = newN;
-            board = new SDKSquare[n][n];
-            for (int i = 0; i < n; i++) {
-                for (int j = 0; j < n; j++) {
+            board = new SDKSquare[newN][newN];
+            for (int i = 0; i < newN; i++) {
+                for (int j = 0; j < newN; j++) {
                     board[i][j] = new SDKSquare();
                 }
             }
@@ -274,14 +279,17 @@ public class SDKBoard {
                     col++;
                 }
 
-                n = rowList.size();
+                int newN = rowList.size();
 
-                if (n != getN() && n != 0 && n % 3 == 0) {
-                    createBoard(n);
+                if (newN != getN()
+                        && newN != 0
+                        && newN % ((int) Math.sqrt(newN)) == 0) {
+                    createBoard(newN);
                 }
 
                 // lock loaded non-zero values
                 for (int i = 0; i < col; i++) {
+                    board[row][i].setLocked(false);
                     setSquareValue(row, i, rowList.pop());
                     if (getSquareValue(row, i) != 0) {
                         board[row][i].setLocked(true);
@@ -334,19 +342,21 @@ public class SDKBoard {
                         board[row][col].addPossible(i);
                     }
                     //DEBUG
-                    System.out.println("("+row+","+col+")POS:"+board[row][col].getPossible());
+//                    System.out.println("("+row+","+col+")POS:"+board[row][col].getPossible());
 
 
                     //DEBUG
 //                    System.out.println("("+row+","+col+")CON:"+getConstraints(row, col));
 
-                    for (Integer usedVal : getConstraints(row, col)) {
+                    for (int usedVal : getConstraints(row, col)) {
                         //remove direct conflicts
-                        board[row][col].removePossible(usedVal); 
+                        board[row][col].removePossible(usedVal);
                     }
                     //DEBUG
-                    System.out.println("("+row+","+col+")POS:"+board[row][col].getPossible());
+//                    System.out.println("(" + row + "," + col + ")POS:" + board[row][col].getPossible());
 
+                }else{
+                    board[row][col].clearPossible();
                 }
             }
         }

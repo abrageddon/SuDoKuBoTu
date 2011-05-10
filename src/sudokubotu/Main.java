@@ -540,7 +540,7 @@ public class Main extends javax.swing.JFrame {
             File file = fileBrowser.getSelectedFile();
 
             System.out.print("Opening: " + file.getName() + "." + "\n");
-            currentBoard = new SDKBoard();
+
             currentBoard.loadBoard(file);
 
             for (JPanel panel : SDKZones) {

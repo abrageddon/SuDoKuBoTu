@@ -24,16 +24,16 @@ public class SDKSquare {
         possible = new HashSet<Integer>();
     }
     
-    SDKSquare(Integer value) {
+    SDKSquare(Integer v) {
         this();
-        setValue(value);
-        if (value != 0){
+        setValue(v);
+        if (v != 0){
             setLocked(true);
         }
     }
 
-    SDKSquare(Integer value, Boolean locked) {
-        this(value);
+    SDKSquare(Integer v, Boolean locked) {
+        this(v);
         setLocked(locked);
     }
 
@@ -49,30 +49,36 @@ public class SDKSquare {
         return value;
     }
 
-    public final void setValue(Integer value) {
+    public final void setValue(Integer v) {
         if (!locked) {
-            this.value = value;
+            this.value = v;
         }
     }
 
-    public boolean addPossible(int val){
-        return possible.add(value);
+    public boolean addPossible(int posVal){
+        if (posVal != 0 ){//zero is never a possibility
+            return possible.add(posVal);
+        }else{return false;}
     }
 
-    public boolean removePossible(int val){
-        return possible.remove(value);
+    public boolean removePossible(int posVal){
+        return possible.remove(posVal);
     }
     
-    public boolean isPossible(int value){
-        return possible.contains(value);
+    public boolean isPossible(int posVal){
+        return possible.contains(posVal);
     }
 
     public HashSet<Integer> getPossible (){
         // Return a copy of possible values
 //        HashSet<Integer> ret = new HashSet<Integer>((possible!=null?possible.size():0));
-//        for (Integer val:possible){
-//            ret.add(val);
+//        for (int posVal:possible){
+//            ret.add(posVal);
 //        }
         return possible;
+    }
+
+    void clearPossible() {
+        possible.clear();
     }
 }
