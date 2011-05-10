@@ -1,10 +1,14 @@
+package sudokubotu;
+
 
 public class Cell
 	{
 		private int x;
 		private int y;
 		private int n;
-		
+
+                // TODO -- CLARK -- Document this mystery class
+
 		public Cell(int n)
 		{
 			this.n = n;

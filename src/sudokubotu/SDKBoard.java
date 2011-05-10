@@ -1,4 +1,4 @@
-
+package sudokubotu;
 
 import java.awt.Point;
 import java.io.BufferedReader;
@@ -21,7 +21,6 @@ public class SDKBoard {
 
     // this class holds all the information for a sudoku board
     //
-
     private int n;
     private SDKSquare[][] board;
 
@@ -38,8 +37,8 @@ public class SDKBoard {
         n = newBoard.length;
     }
 
-    public SDKSquare[][] getBoard() {
-        return board;
+    public SDKSquare[][] copyBoard() {
+        return board.clone();
     }
 
     public Integer getBoardValue(Integer row, Integer col) {
@@ -77,8 +76,8 @@ public class SDKBoard {
     }
 
     public boolean isSolved() {
-        for (int row = 0; row < n; row++) {
-            for (int col = 0; col < n; col++) {
+        for (int row = 0; row < getN(); row++) {
+            for (int col = 0; col < getN(); col++) {
                 if (board[row][col].getValue() <= 0) {
                     return false;
                 }
@@ -97,8 +96,8 @@ public class SDKBoard {
         HashMap<Integer, Point> used = new HashMap<Integer, Point>();
 
         // Check Rows
-        for (int row = 0; row < n; row++) {
-            for (int col = 0; col < n; col++) {
+        for (int row = 0; row < getN(); row++) {
+            for (int col = 0; col < getN(); col++) {
                 if (board[row][col].getValue() != 0) {
                     if (used.containsKey(board[row][col].getValue())) {
                         conflict.add(new Point(row, col));
@@ -112,8 +111,8 @@ public class SDKBoard {
         }
 
         // Check Col
-        for (int col = 0; col < n; col++) {
-            for (int row = 0; row < n; row++) {
+        for (int col = 0; col < getN(); col++) {
+            for (int row = 0; row < getN(); row++) {
                 if (board[row][col].getValue() != 0) {
                     if (used.containsKey(board[row][col].getValue())) {
                         conflict.add(new Point(row, col));
@@ -152,12 +151,12 @@ public class SDKBoard {
 
     public Integer identifyZone(Integer row, Integer col) {
         // identify zones by using integer division to find region
-        int zonesInRow = (int) Math.sqrt(n) ;
-        return (row / zonesInRow)*zonesInRow + (col / zonesInRow);
+        int zonesInRow = (int) Math.sqrt(getN());
+        return (row / zonesInRow) * zonesInRow + (col / zonesInRow);
     }
 
-    public int getZonesInRow (){
-        return (int) Math.sqrt(getN()) ;
+    public int getZonesInRow() {
+        return (int) Math.sqrt(getN());
     }
 
     public HashMap<Point, Integer> getBoardZone(Integer zone) {
@@ -166,27 +165,27 @@ public class SDKBoard {
         // 0 1 2
         // 3 4 5
         // 6 7 8
-        
+
         int z = zone;
-        int zonesInRow = (int) Math.sqrt(n) ;
+        int zonesInRow = getZonesInRow();
 
         int minRow = 0;
         int minCol = 0;
-        int maxRow = n / zonesInRow;
-        int maxCol = n / zonesInRow;
+        int maxRow = getN() / zonesInRow;
+        int maxCol = getN() / zonesInRow;
 
         //find the row by counting columns
         while (z >= zonesInRow) {
             z -= zonesInRow;
-            minRow += n / zonesInRow;
-            maxRow += n / zonesInRow;
+            minRow += getN() / zonesInRow;
+            maxRow += getN() / zonesInRow;
         }
 
         // move over to proper column
         while (z > 0) {
             z -= 1;
-            minCol += n / zonesInRow;
-            maxCol += n / zonesInRow;
+            minCol += getN() / zonesInRow;
+            maxCol += getN() / zonesInRow;
         }
 
         // get zone
@@ -196,19 +195,25 @@ public class SDKBoard {
                 zonePts.put(new Point(row, col), board[row][col].getValue());
             }
         }
-
-
         return zonePts;
     }
 
-//    public Set<Integer> getBoardRowValues(Integer row){
-//        // TODO get Board row
-//        return null;
-//    }
-//    public Set<Integer> getBoardColumnValues(Integer col){
-//        // TODO get Board col
-//        return null;
-//    }
+    public HashMap<Point, Integer> getBoardRow(Integer row) {
+        // get Board row
+        HashMap<Point, Integer> rowPts = new HashMap<Point, Integer>();
+        for (int i = 0; i < getN(); i++) {
+            rowPts.put(new Point(row, i), board[row][i].getValue());
+        }
+        return rowPts;
+    }
+
+    public HashMap<Point, Integer> getBoardCol(Integer col) {
+        HashMap<Point, Integer> colPts = new HashMap<Point, Integer>();
+        for (int i = 0; i < getN(); i++) {
+            colPts.put(new Point(i, col), board[i][col].getValue());
+        }
+        return colPts;
+    }
 
     public boolean saveBoard(File file) {
         try {
@@ -265,7 +270,7 @@ public class SDKBoard {
                 // lock loaded non-zero values
                 for (int i = 0; i < col; i++) {
                     setBoardValue(row, i, rowList.pop());
-                    if(getBoardValue(row, i) != 0){
+                    if (getBoardValue(row, i) != 0) {
                         board[row][i].setLocked(true);
                     }
                 }
@@ -287,8 +292,8 @@ public class SDKBoard {
     boolean isSquareLocked(int row, int col) {
         return board[row][col].isLocked();
     }
-    void setSquareLock(int row, int col, boolean value){
+
+    void setSquareLock(int row, int col, boolean value) {
         board[row][col].setLocked(value);
     }
-
 }

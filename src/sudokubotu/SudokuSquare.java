@@ -1,28 +1,32 @@
-import java.util.LinkedList;
+package sudokubotu;
 
-public class SudokuSquare
-	{
-		Integer num = 0;
-		LinkedList<Integer> prevNums;
-		LinkedList<Integer> possible;
-		boolean perm = false;
-		public SudokuSquare()
-		{
-			num =0;
-			prevNums = new LinkedList<Integer>();
-			possible = new LinkedList<Integer>();
-		}
-		public SudokuSquare(int n)
-		{
-			num = n;
-			prevNums = new LinkedList<Integer>();
-			possible = new LinkedList<Integer>();
-			perm = true;
-		}
-		public void Clear() {
-			prevNums = new LinkedList<Integer>();
-			possible = new LinkedList<Integer>();
-			num =0;
-			
-		}
-	}
+import java.util.HashSet;
+
+public class SudokuSquare extends SDKSquare {
+
+    HashSet<Integer> prevNums;
+    HashSet<Integer> possible;
+
+    public SudokuSquare() {
+        Clear();
+    }
+
+    public SudokuSquare(int n) {
+        Clear();
+        setValue(n);
+        setLocked(Boolean.TRUE);
+    }
+
+    SudokuSquare(Integer boardValue, boolean squareLocked) {
+        Clear();
+        setValue(boardValue);
+        setLocked(squareLocked);
+    }
+
+    public final void Clear() {
+        prevNums = new HashSet<Integer>();
+        possible = new HashSet<Integer>();
+        setValue(0);
+        setLocked(Boolean.FALSE);
+    }
+}

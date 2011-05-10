@@ -1,3 +1,4 @@
+package sudokubotu;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -6,6 +7,7 @@ import java.awt.Point;
 import java.io.File;
 import java.util.Set;
 import javax.swing.BorderFactory;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -18,6 +20,7 @@ import javax.swing.JTextField;
 public class Main extends javax.swing.JFrame {
 
     private SDKBoard currentBoard;
+    private boolean editMode = false;
 
     /** Creates new form MainWindow */
     public Main() {
@@ -31,11 +34,11 @@ public class Main extends javax.swing.JFrame {
         Set<Point> invalid = currentBoard.conflictedSquares();
         for (int row = 0; row < currentBoard.getN(); row++) {
             for (int col = 0; col < currentBoard.getN(); col++) {
-                if (invalid.contains(new Point(row, col)) && currentBoard.isSquareLocked(row,col)) {
+                if (invalid.contains(new Point(row, col)) && currentBoard.isSquareLocked(row, col)) {
                     SDKSquares[row][col].setBackground(Color.RED);
-                } else if(invalid.contains(new Point(row, col))){
+                } else if (invalid.contains(new Point(row, col))) {
                     SDKSquares[row][col].setBackground(Color.PINK);
-                } else if(currentBoard.isSquareLocked(row,col)){
+                } else if (currentBoard.isSquareLocked(row, col)) {
                     SDKSquares[row][col].setBackground(Color.GRAY);
                 } else {
                     SDKSquares[row][col].setBackground(Color.WHITE);
@@ -55,31 +58,14 @@ public class Main extends javax.swing.JFrame {
     }
 
     private void solveBoard() {
-    	Sudoku game;
-		SudokuSquare [][]board;
-		int n = currentBoard.getN();
-		int tries =0;
-		do{
-			game = new Sudoku();
-			board  = new SudokuSquare[n][n];
-			for(int i = 0;i<n; i++)
-				for(int j = 0; j<n; j++)
-					if(board[i][j] == null)
-						board[i][j] = new SudokuSquare();
-			tries++;
-			}while(!game.Solve(board, new Cell(n,0,0)));
-		for(int i = 0;i<n; i++)
-			for(int j = 0; j<n; j++)
-				currentBoard.getBoard()[i][j].setValue(board[i][j].num);
-		for (int i = 0; i < currentBoard.getZonesInRow(); i++) {
-            SDKZones[i].setLayout(new java.awt.GridLayout(currentBoard.getZonesInRow(), currentBoard.getZonesInRow()));
-        }
+        SudokuBot solver = new SudokuBot(currentBoard);
+        currentBoard = solver.getSolution();
         redrawBoard();
-		
-	}
+    }
+
     private void clearBoard() {
         // clear to blank board
-        if (editBoard.isSelected()){
+        if (editBoard.isSelected()) {
             currentBoard.createBoard(currentBoard.getN());
             initBoard();
             BoardBack.updateUI();
@@ -87,9 +73,9 @@ public class Main extends javax.swing.JFrame {
             // clear to game board
             for (int row = 0; row < currentBoard.getN(); row++) {
                 for (int col = 0; col < currentBoard.getN(); col++) {
-                    if(currentBoard.setBoardValue(row, col, 0)){
+                    if (currentBoard.setBoardValue(row, col, 0)) {
                         SDKSquares[row][col].setBackground(Color.white);
-                    }else{
+                    } else {
                         SDKSquares[row][col].setBackground(Color.GRAY);
                     }
                 }
@@ -114,6 +100,8 @@ public class Main extends javax.swing.JFrame {
         scrollBackPane = new javax.swing.JScrollPane();
         BoardBack = new javax.swing.JPanel();
         generateButton = new javax.swing.JButton();
+        rankButton = new javax.swing.JButton();
+        editButton = new javax.swing.JToggleButton();
         jMenuBar1 = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
         newBoard = new javax.swing.JMenuItem();
@@ -138,12 +126,12 @@ public class Main extends javax.swing.JFrame {
         });
 
         solveButton.setText("Solve");
-        solveButton.setEnabled(true);
         solveButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-            	solveButtonActionPreformed(evt);
+                solveButtonActionPerformed(evt);
             }
         });
+
         checkButton.setText("Check");
         checkButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -163,6 +151,20 @@ public class Main extends javax.swing.JFrame {
         generateButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 generateButtonActionPerformed(evt);
+            }
+        });
+
+        rankButton.setText("Rank");
+        rankButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                rankButtonActionPerformed(evt);
+            }
+        });
+
+        editButton.setText("Edit");
+        editButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                editButtonActionPerformed(evt);
             }
         });
 
@@ -219,7 +221,11 @@ public class Main extends javax.swing.JFrame {
 
         solveBoard.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_V, java.awt.event.InputEvent.CTRL_MASK));
         solveBoard.setText("Solve Board");
-        solveBoard.setEnabled(false);
+        solveBoard.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                solveBoardActionPerformed(evt);
+            }
+        });
         editMenu.add(solveBoard);
 
         checkBoard.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_C, java.awt.event.InputEvent.CTRL_MASK));
@@ -253,11 +259,15 @@ public class Main extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(generateButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(solveButton)
+                .addComponent(rankButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(checkButton)
-                .addGap(383, 383, 383))
-            .addComponent(scrollBackPane, javax.swing.GroupLayout.DEFAULT_SIZE, 721, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(solveButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(editButton)
+                .addGap(292, 292, 292))
+            .addComponent(scrollBackPane, javax.swing.GroupLayout.DEFAULT_SIZE, 853, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -265,8 +275,10 @@ public class Main extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(clearButton)
                     .addComponent(solveButton)
+                    .addComponent(generateButton)
                     .addComponent(checkButton)
-                    .addComponent(generateButton))
+                    .addComponent(rankButton)
+                    .addComponent(editButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(scrollBackPane, javax.swing.GroupLayout.DEFAULT_SIZE, 422, Short.MAX_VALUE))
         );
@@ -277,11 +289,9 @@ public class Main extends javax.swing.JFrame {
     private void clearButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clearButtonActionPerformed
         clearBoard();
     }//GEN-LAST:event_clearButtonActionPerformed
-    private void solveButtonActionPreformed(java.awt.event.ActionEvent evt){
-    	solveBoard();
-    }
+
 	private void checkButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkButtonActionPerformed
-        checkBoard();
+            checkBoard();
     }//GEN-LAST:event_checkButtonActionPerformed
 
     private void clearBoardActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clearBoardActionPerformed
@@ -309,15 +319,9 @@ public class Main extends javax.swing.JFrame {
         int numOfOptions = 6;
         Integer[] options = new Integer[numOfOptions];
         for (int i = 0; i < numOfOptions; i++) {
-            options[i] = (i + 2) * (i +2);
+            options[i] = (i + 2) * (i + 2);
         }
-        Object answer = JOptionPane.showInputDialog(rootPane
-                , "New Board Size\n\nWidth: "
-                , "New Board"
-                , JOptionPane.PLAIN_MESSAGE
-                , null
-                , options
-                , currentBoard.getN());
+        Object answer = JOptionPane.showInputDialog(rootPane, "New Board Size\n\nWidth: ", "New Board", JOptionPane.PLAIN_MESSAGE, null, options, currentBoard.getN());
         int newN = 9;
         for (Integer opt : options) {
             if (opt == answer) {
@@ -330,28 +334,48 @@ public class Main extends javax.swing.JFrame {
             currentBoard.createBoard(newN);
             initBoard();
         }
-        BoardBack.updateUI();
-
-
-
-
 
     }//GEN-LAST:event_newBoardActionPerformed
 
     private void editBoardActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editBoardActionPerformed
-        // TODO enable edit mode
-        
+        // TODO enable edit mode lock squares on switch
+        if (editMode) {
+            endEdit();
+        } else {
+            startEdit();
+        }
     }//GEN-LAST:event_editBoardActionPerformed
 
     private void generateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_generateButtonActionPerformed
         // TODO generateButton
     }//GEN-LAST:event_generateButtonActionPerformed
 
+    private void solveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_solveButtonActionPerformed
+        solveBoard();
+    }//GEN-LAST:event_solveButtonActionPerformed
 
+    private void solveBoardActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_solveBoardActionPerformed
+        solveBoard();
+    }//GEN-LAST:event_solveBoardActionPerformed
+
+    private void rankButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rankButtonActionPerformed
+        // TODO calculate and display difficulty in GUI
+        SudokuBot solver = new SudokuBot(currentBoard);
+        System.out.println(solver.getBoardDifficulty());
+    }//GEN-LAST:event_rankButtonActionPerformed
+
+    private void editButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editButtonActionPerformed
+        // TODO edit mode button
+        if (editMode) {
+            endEdit();
+        } else {
+            startEdit();
+        }
+    }//GEN-LAST:event_editButtonActionPerformed
 
     private void SDKSquaresFocusGained(java.awt.event.FocusEvent evt) {
         // Select text when box clicked
-        ((JTextField)evt.getComponent()).selectAll();
+        ((JTextField) evt.getComponent()).selectAll();
     }
 
     /**
@@ -372,6 +396,7 @@ public class Main extends javax.swing.JFrame {
     private javax.swing.JMenuItem clearBoard;
     private javax.swing.JButton clearButton;
     private javax.swing.JCheckBoxMenuItem editBoard;
+    private javax.swing.JToggleButton editButton;
     private javax.swing.JMenu editMenu;
     private javax.swing.JMenuItem exitSDK;
     private javax.swing.JFileChooser fileBrowser;
@@ -380,6 +405,7 @@ public class Main extends javax.swing.JFrame {
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JMenuItem newBoard;
     private javax.swing.JMenuItem openBoard;
+    private javax.swing.JButton rankButton;
     private javax.swing.JMenuItem saveBoard;
     private javax.swing.JScrollPane scrollBackPane;
     private javax.swing.JMenuItem solveBoard;
@@ -392,10 +418,10 @@ public class Main extends javax.swing.JFrame {
 
         initZones();
         initSquares();
-
+        BoardBack.updateUI();
     }
 
-    private void initZones(){
+    private void initZones() {
         SDKZones = new JPanel[currentBoard.getN()];
 
         BoardBack.removeAll();
@@ -408,12 +434,13 @@ public class Main extends javax.swing.JFrame {
             BoardBack.add(SDKZones[i]);
         }
     }
+
     private void initSquares() {
         SDKSquares = new JTextField[currentBoard.getN()][currentBoard.getN()];
-        for (JPanel zone: SDKZones){
+        for (JPanel zone : SDKZones) {
             zone.removeAll();
         }
-        
+
         for (int row = 0; row < currentBoard.getN(); row++) {
             for (int col = 0; col < currentBoard.getN(); col++) {
                 SDKSquares[row][col] = new JTextField();
@@ -429,13 +456,12 @@ public class Main extends javax.swing.JFrame {
                     public void focusGained(java.awt.event.FocusEvent evt) {
                         SDKSquaresFocusGained(evt);
                     }
-                    
                 });
 
-                if(currentBoard.isSquareLocked(row,col)){
+                if (currentBoard.isSquareLocked(row, col)) {
                     SDKSquares[row][col].setEditable(false);
                     SDKSquares[row][col].setBackground(Color.GRAY);
-                }else{
+                } else {
                     SDKSquares[row][col].setEditable(true);
                     SDKSquares[row][col].setBackground(Color.WHITE);
                 }
@@ -491,16 +517,11 @@ public class Main extends javax.swing.JFrame {
             // ask to overwrite
             boolean write = true;
             if (file.exists()) {
-                write = (JOptionPane.showConfirmDialog(rootPane
-                        , "File Exists!\n\nOverwrite?"
-                        , "Overwrite?"
-                        , JOptionPane.WARNING_MESSAGE
-                        , JOptionPane.YES_NO_OPTION
-                        ) == JOptionPane.YES_OPTION
+                write = (JOptionPane.showConfirmDialog(rootPane, "File Exists!\n\nOverwrite?", "Overwrite?", JOptionPane.WARNING_MESSAGE, JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION
                         ? true
                         : false);
             }
-            
+
             if (write) {
                 updateValues();
                 System.out.print("Writng to file: " + file.getName() + "." + "\n");
@@ -512,9 +533,6 @@ public class Main extends javax.swing.JFrame {
         } else {
             System.out.print("Save command cancelled by user." + "\n");
         }
-
-
-
     }
 
     private void loadSDKBoard() {
@@ -528,7 +546,7 @@ public class Main extends javax.swing.JFrame {
             for (JPanel panel : SDKZones) {
                 panel.removeAll();
             }
-            
+
             for (int i = 0; i < currentBoard.getZonesInRow(); i++) {
                 SDKZones[i].setLayout(new java.awt.GridLayout(currentBoard.getZonesInRow(), currentBoard.getZonesInRow()));
             }
@@ -539,9 +557,53 @@ public class Main extends javax.swing.JFrame {
         } else {
             System.out.print("Open command cancelled by user." + "\n");
         }
+    }
 
+    private void endEdit() {
+        updateValues();
+        if (currentBoard.conflictedSquares().isEmpty()) {
+            for (int row = 0; row < currentBoard.getN(); row++) {
+                for (int col = 0; col < currentBoard.getN(); col++) {
+                    if (currentBoard.getBoardValue(row, col) == 0) {
+                        currentBoard.setSquareLock(row, col, false);
+                    } else {
+                        currentBoard.setSquareLock(row, col, true);
+                    }
+                }
+            }
+            initBoard();
+            redrawBoard();
+            solveButton.setEnabled(true);
+            editBoard.setSelected(false);
+            editButton.setSelected(false);
+            editMode = false;
+        } else {
+            checkBoard();
+            solveButton.setEnabled(false);
+            editBoard.setSelected(true);
+            editButton.setSelected(true);
+        }
+    }
 
-
-
+    private void startEdit() {
+        updateValues();
+        if (currentBoard.conflictedSquares().isEmpty()) {
+            for (int row = 0; row < currentBoard.getN(); row++) {
+                for (int col = 0; col < currentBoard.getN(); col++) {
+                    currentBoard.setSquareLock(row, col, false);
+                }
+            }
+            initBoard();
+            redrawBoard();
+            solveButton.setEnabled(false);
+            editBoard.setSelected(true);
+            editButton.setSelected(true);
+            editMode = true;
+        } else {
+            checkBoard();
+            solveButton.setEnabled(true);
+            editBoard.setSelected(false);
+            editButton.setSelected(false);
+        }
     }
 }
