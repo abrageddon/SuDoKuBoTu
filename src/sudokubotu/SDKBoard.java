@@ -36,8 +36,7 @@ public class SDKBoard {
         board = new SDKSquare[newBoard.length][newBoard.length];
         for (int row = 0; row < getN(); row++) {
             for (int col = 0; col < getN(); col++) {
-                board[row][col] = new SDKSquare(newBoard[row][col].getValue()
-                        , newBoard[row][col].isLocked());
+                board[row][col] = new SDKSquare(newBoard[row][col].getValue(), newBoard[row][col].isLocked());
                 for (int posVal : newBoard[row][col].getPossible()) {
                     board[row][col].addPossible(posVal);
                 }
@@ -355,7 +354,7 @@ public class SDKBoard {
                     //DEBUG
 //                    System.out.println("(" + row + "," + col + ")POS:" + board[row][col].getPossible());
 
-                }else{
+                } else {
                     board[row][col].clearPossible();
                 }
             }
@@ -400,5 +399,17 @@ public class SDKBoard {
 
     HashSet<Integer> getSquarePossible(int x, int y) {
         return board[x][y].getPossible();
+    }
+
+    public int getNumberOfClues() {
+        int clues = 0;
+        for (int row = 0; row < getN(); row++) {
+            for (int col = 0; col < getN(); col++) {
+                if (board[row][col].isLocked()){
+                    clues++;
+                }
+            }
+        }
+        return clues;
     }
 }
