@@ -45,6 +45,10 @@ public class SDKBoard {
         updateConstraints();
     }
 
+    SDKBoard(SDKBoard solved) {
+        this(solved.board);
+    }
+
     public SDKSquare[][] copyBoard() {
         SDKSquare[][] copy = new SDKSquare[getN()][getN()];
         for (int row = 0; row < getN(); row++) {
