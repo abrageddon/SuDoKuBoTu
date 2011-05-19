@@ -35,7 +35,7 @@ public class LastRemainingMaskFactory extends SDKMaskFactory {
 				square.setLocked(true);
 				board.updateConstraints();
 			} else {
-				mask.set(square.row, square.col, true);
+				mask.set(square.row, square.col, false);
 			}
 		}
 		return mask;

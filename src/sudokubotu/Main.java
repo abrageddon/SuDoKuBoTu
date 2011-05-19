@@ -8,6 +8,7 @@ import java.io.File;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+
 import javax.swing.BorderFactory;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -72,32 +73,22 @@ public class Main extends javax.swing.JFrame {
     private void generateBoard() {
         startEdit();
         clearBoard();
-        SDKBoard seed = new SDKBoard(currentBoard.getN());
-        int seedCount =0;
-        Random rand = new Random();
-        int row = rand.nextInt(seed.getN());
-        int column = rand.nextInt(seed.getN());
-        int max = rand.nextInt((seed.getN()*seed.getN())/2);
-        while(seedCount < max){
-        	if(seed.getSquareValue(row, column)==0){
-        		seed.setSquareValue(row, column, rand.nextInt(seed.getN()+1));
-        		if( !seed.conflictedSquares().isEmpty() )
-            		seed.setSquareValue(row, column, 0);
-        		else
-        			seed.setSquareLock(row, column, true);
-        	}
-        	row = rand.nextInt(seed.getN());
-    		column = rand.nextInt(seed.getN());
-        	seedCount ++;
-        }
-        System.out.println(seed.toString());
-        SudokuBot solver = new SudokuBot(seed);
         
-        SDKBoard generated = solver.getSolution();
-        // TODO add box to select difficulty
-//        generated.updateConstraints();
+        Grid grid = new Grid();
+        BruteForceAnalysis analyser = new BruteForceAnalysis(true);
+        boolean result = analyser.solveRandom(grid, new Random());
+        assert result;
+        Grid solution = new Grid();
+        grid.copyTo(solution);
+        
+        SDKBoard generated = new SDKBoard();
+        for ( SDKSquare s : generated.getAllSquares() ) {
+        	int val = solution.getCellValue(s.row, s.col);
+        	s.setValue(val);
+        }
+        
         SDKMask mask = LastRemainingMaskFactory.createMaskForBoard(generated, 81);
-//        System.out.println(mask);//DEBUG
+        
         currentBoard = mask.applyTo(generated);
         endEdit();
         initBoard();

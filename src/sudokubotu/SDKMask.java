@@ -12,6 +12,11 @@ public class SDKMask {
 
     SDKBoard mask = new SDKBoard();
 
+    public SDKMask() {
+    	for(SDKSquare s : mask.getAllSquares())
+    		s.setLocked(true);
+    }
+    
     public void set(int row, int col, boolean bit) {
         mask.setSquareLock(row, col, bit);
     }
