@@ -69,15 +69,15 @@ public class Main extends javax.swing.JFrame {
     }
 
     private void generateBoard() {
-        startEdit();
-        clearBoard();
+        startEdit();//unlock the board to edit
+        clearBoard();//clear any old values from gui
         SudokuBot solver = new SudokuBot(new SDKBoard(currentBoard.getN()));
         // TODO needs random seed
         SDKBoard generated = solver.getSolution();
         // TODO add box to select difficulty
-        generated.updateConstraints();
+//        generated.updateConstraints();
         SDKMask mask = LastRemainingMaskFactory.createMaskForBoard(generated, 81);
-        System.out.println(mask);
+//        System.out.println(mask);//DEBUG
         currentBoard = mask.applyTo(generated);
         endEdit();
         initBoard();
@@ -387,8 +387,11 @@ public class Main extends javax.swing.JFrame {
     private void rankBoard() {
     	diuf.sudoku.Grid grid = new Grid();
     	BruteForceAnalysis bfa = new BruteForceAnalysis(false);
-    	for(SDKSquare s : currentBoard.getAllSquares())
+    	for(SDKSquare s : currentBoard.getAllSquares()){
+            if (s.isLocked()){
     		grid.setCellValue(s.row, s.col, s.getValue());
+            }
+        }
     	Solver solver = new diuf.sudoku.solver.Solver(grid);
         solver.rebuildPotentialValues();
         try {

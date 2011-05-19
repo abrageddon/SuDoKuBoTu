@@ -1,5 +1,8 @@
 package sudokubotu;
 
+import diuf.sudoku.Grid;
+import diuf.sudoku.solver.Solver;
+import diuf.sudoku.solver.checks.BruteForceAnalysis;
 import java.awt.Point;
 import java.util.Iterator;
 
@@ -176,32 +179,51 @@ public class SudokuBot {
     }
 
     boolean isUnique() {
+        diuf.sudoku.Grid grid = new Grid();
+        BruteForceAnalysis bfa = new BruteForceAnalysis(false);
+        for (SDKSquare s : board.getAllSquares()) {
+            if (s.isLocked()) {
+                grid.setCellValue(s.row, s.col, s.getValue());
+            }
+        }
+        Solver solver = new diuf.sudoku.solver.Solver(grid);
+        solver.rebuildPotentialValues();
+
+        if (bfa.getCountSolutions(grid) > 1) {
+            return false;
+        }
+        return true;
+        /*
         int[][] solveForward = board.getSimpleBoard();
         int[][] solveBackward = board.getSimpleBoard();
         if (solve(0, 0, solveForward)) {
-            if (solveReverse(solver.getN() - 1, solver.getN() - 1, solveBackward)) {
-                for (int row = 0; row < solver.getN(); row++) {
-                    for (int col = 0; col < solver.getN(); col++) {
-                        if(solveForward[row][col] != solveBackward[row][col]){
-                            return false;
-                        }
-                    }
-                }
-                return true; // if solving foreward and backward are equiv
-            }
-        }
+        if (solveReverse(solver.getN() - 1, solver.getN() - 1, solveBackward)) {
+        for (int row = 0; row < solver.getN(); row++) {
+        for (int col = 0; col < solver.getN(); col++) {
+        if(solveForward[row][col] != solveBackward[row][col]){
         return false;
+        }
+        }
+        }
+        return true; // if solving foreward and backward are equiv
+        }
+        }
+        return false;*/
     }
 
     boolean legal(int i, int j, int val, int[][] cells) {
-        for (int k = 0; k < solver.getN(); ++k) // row
+        for (int k = 0; k
+                < solver.getN();
+                ++k) // row
         {
             if (val == cells[k][j]) {
                 return false;
             }
         }
 
-        for (int k = 0; k < solver.getN(); ++k) // col
+        for (int k = 0; k
+                < solver.getN();
+                ++k) // col
         {
             if (val == cells[i][k]) {
                 return false;
@@ -210,27 +232,31 @@ public class SudokuBot {
 
         int boxRowOffset = (i / solver.getZonesInRow()) * solver.getZonesInRow();
         int boxColOffset = (j / solver.getZonesInRow()) * solver.getZonesInRow();
-        for (int k = 0; k < solver.getZonesInRow(); ++k) // box
+        for (int k = 0; k
+                < solver.getZonesInRow();
+                ++k) // box
         {
-            for (int m = 0; m < solver.getZonesInRow(); ++m) {
+            for (int m = 0; m
+                    < solver.getZonesInRow();
+                    ++m) {
                 if (val == cells[boxRowOffset + k][boxColOffset + m]) {
                     return false;
                 }
             }
         }
-
         return true; // no violations, so it's legal
     }
 
     private void initSolverBoard() {
         solver = new SDKBoard(board.getN());
+
         for (int row = 0; row < board.getN(); row++) {
             for (int col = 0; col < board.getN(); col++) {
+                solver.setSquareLock(row, col, false);
                 solver.setSquareValue(row, col, board.getSquareValue(row, col));
                 solver.setSquareLock(row, col, board.isSquareLocked(row, col));
             }
         }
-
         solver.updateConstraints();
     }
 }
