@@ -6,6 +6,7 @@ import java.awt.Font;
 import java.awt.Point;
 import java.io.File;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import javax.swing.BorderFactory;
 import javax.swing.JFileChooser;
@@ -71,8 +72,27 @@ public class Main extends javax.swing.JFrame {
     private void generateBoard() {
         startEdit();
         clearBoard();
-        SudokuBot solver = new SudokuBot(new SDKBoard(currentBoard.getN()));
-        // TODO needs random seed
+        SDKBoard seed = new SDKBoard(currentBoard.getN());
+        int seedCount =0;
+        Random rand = new Random();
+        int row = rand.nextInt(seed.getN());
+        int column = rand.nextInt(seed.getN());
+        int max = rand.nextInt((seed.getN()*seed.getN())/2);
+        while(seedCount < max){
+        	if(seed.getSquareValue(row, column)==0){
+        		seed.setSquareValue(row, column, rand.nextInt(seed.getN()+1));
+        		if( seed.conflictedSquares().size()!=0)
+            		seed.setSquareValue(row, column, 0);
+        		else
+        			seed.setSquareLock(row, column, true);
+        	}
+        	row = rand.nextInt(seed.getN());
+    		column = rand.nextInt(seed.getN());
+        	seedCount ++;
+        }
+        System.out.println(seed.toString());
+        SudokuBot solver = new SudokuBot(seed);
+        
         SDKBoard generated = solver.getSolution();
         // TODO add box to select difficulty
         generated.updateConstraints();
@@ -359,7 +379,7 @@ public class Main extends javax.swing.JFrame {
     }//GEN-LAST:event_newBoardActionPerformed
 
     private void editBoardActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editBoardActionPerformed
-        // TODO enable edit mode lock squares on switch
+        //enable edit mode lock squares on switch
         if (editMode) {
             endEdit();
         } else {
