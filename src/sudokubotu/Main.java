@@ -5,12 +5,18 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Point;
 import java.io.File;
+import java.util.Map;
 import java.util.Set;
 import javax.swing.BorderFactory;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+
+import diuf.sudoku.Grid;
+import diuf.sudoku.solver.Rule;
+import diuf.sudoku.solver.Solver;
+import diuf.sudoku.solver.checks.BruteForceAnalysis;
 
 /**
  *
@@ -370,11 +376,36 @@ public class Main extends javax.swing.JFrame {
 
     private void rankButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rankButtonActionPerformed
         // TODO calculate and display difficulty in GUI
-        SudokuBot solver = new SudokuBot(currentBoard);
-        System.out.println(solver.getBoardDifficulty());
+    	rankBoard();
     }//GEN-LAST:event_rankButtonActionPerformed
 
-    private void editButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editButtonActionPerformed
+    private void rankBoard() {
+    	diuf.sudoku.Grid grid = new Grid();
+    	BruteForceAnalysis bfa = new BruteForceAnalysis(false);
+    	for(SDKSquare s : currentBoard.getAllSquares())
+    		grid.setCellValue(s.row, s.col, s.getValue());
+    	Solver solver = new diuf.sudoku.solver.Solver(grid);
+        solver.rebuildPotentialValues();
+        try {
+        	if ( bfa.getCountSolutions(grid) > 1)
+        		throw new UnsupportedOperationException("Invalid number of solutions");
+            Map<Rule,Integer> rules = solver.solve(null);
+            double difficulty = 0;
+            String hardestRule = "";
+            for (Rule rule : rules.keySet()) {
+                if (rule.getDifficulty() > difficulty) {
+                    difficulty = rule.getDifficulty();
+                    hardestRule = rule.getName();
+                }
+            }
+            System.out.println("hardest rule:" + hardestRule);
+            System.out.println("difficulty:" + difficulty);
+        } catch (UnsupportedOperationException ex) {
+            System.out.println(ex.getMessage());
+        }
+	}
+
+	private void editButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editButtonActionPerformed
         // TODO edit mode button
         if (editMode) {
             endEdit();
