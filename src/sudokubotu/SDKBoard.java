@@ -36,7 +36,7 @@ public class SDKBoard {
         board = new SDKSquare[newBoard.length][newBoard.length];
         for (int row = 0; row < getN(); row++) {
             for (int col = 0; col < getN(); col++) {
-                board[row][col] = new SDKSquare(newBoard[row][col].getValue(), newBoard[row][col].isLocked());
+                board[row][col] = new SDKSquare(newBoard[row][col].getValue(), newBoard[row][col].isLocked(),row,col);
                 for (int posVal : newBoard[row][col].getPossible()) {
                     board[row][col].addPossible(posVal);
                 }
@@ -53,7 +53,7 @@ public class SDKBoard {
         SDKSquare[][] copy = new SDKSquare[getN()][getN()];
         for (int row = 0; row < getN(); row++) {
             for (int col = 0; col < getN(); col++) {
-                copy[row][col] = new SDKSquare(board[row][col].getValue(), board[row][col].isLocked());
+                copy[row][col] = new SDKSquare(board[row][col].getValue(), board[row][col].isLocked(),row,col);
                 for (int posVal : board[row][col].getPossible()) {
                     copy[row][col].addPossible(posVal);
                 }
@@ -90,7 +90,7 @@ public class SDKBoard {
             board = new SDKSquare[newN][newN];
             for (int i = 0; i < newN; i++) {
                 for (int j = 0; j < newN; j++) {
-                    board[i][j] = new SDKSquare();
+                    board[i][j] = new SDKSquare(i,j);
                 }
             }
         }
@@ -417,6 +417,16 @@ public class SDKBoard {
         return clues;
     }
 
+    public LinkedList<SDKSquare> getAllSquares() {
+    	LinkedList<SDKSquare> squares = new LinkedList<SDKSquare>();
+    	for (int row = 0; row < getN(); row++) {
+            for (int col = 0; col < getN(); col++) {
+                squares.add(board[row][col]);
+            }
+        }
+    	return squares;
+    }
+    
     int[][] getSimpleBoard() {
         int[][] simpleBoard = new int[getN()][getN()];
         for (int row = 0; row < getN(); row++) {
@@ -427,6 +437,8 @@ public class SDKBoard {
         return simpleBoard;
     }
 
+
+    
     void loadSimpleBoard(int[][] simpleBoard) {
         if(simpleBoard.length == board.length){
         for (int row = 0; row < getN(); row++) {

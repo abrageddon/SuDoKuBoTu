@@ -16,8 +16,8 @@ public class SDKMask {
         mask.setSquareLock(row, col, bit);
     }
 
-    public void get(int row, int col) {
-        mask.isSquareLocked(row, col);
+    public boolean get(int row, int col) {
+        return mask.isSquareLocked(row, col);
     }
 
     public int getNumberOfClues() {
@@ -31,14 +31,27 @@ public class SDKMask {
         SDKBoard combined = new SDKBoard(solved);
         for (int row = 0; row < mask.getN(); row++) {
             for (int col = 0; col < mask.getN(); col++) {
-                if (mask.isSquareLocked(row, col)) {
-                    combined.setSquareLock(row, col, true);
-                } else {
-                    combined.setSquareLock(row, col, true);
+                if (mask.isSquareLocked(row, col))
+                {
+                    combined.setSquareLock(row, col, false);
                     combined.setSquareValue(row, col, 0);
                 }
             }
         }
         return combined;
+    }
+    
+    @Override
+    public String toString() {
+        String out = "";
+
+        for (int col = 0; col < mask.getN(); col++) {
+            for (int row = 0; row < mask.getN(); row++) {
+                out += get(row, col) + " ";
+            }
+            out += "\n";
+        }
+
+        return out;
     }
 }

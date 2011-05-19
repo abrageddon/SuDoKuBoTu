@@ -17,23 +17,28 @@ public class SDKSquare {
     private Boolean locked = false;
     // possible values
     private HashSet<Integer> possible;
+    
+    public int row;
+    public int col;
 
-    SDKSquare() {
+    SDKSquare(int row, int col) {
+    	this.row = row;
+    	this.col = col;
         setValue(0);
         setLocked(false);
         possible = new HashSet<Integer>();
     }
     
-    SDKSquare(Integer v) {
-        this();
+    SDKSquare(Integer v, int row, int col) {
+        this(row,col);
         setValue(v);
         if (v != 0){
             setLocked(true);
         }
     }
 
-    SDKSquare(Integer v, Boolean locked) {
-        this(v);
+    SDKSquare(Integer v, Boolean locked, int row, int col) {
+        this(v,row,col);
         setLocked(locked);
     }
 

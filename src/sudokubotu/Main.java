@@ -62,6 +62,17 @@ public class Main extends javax.swing.JFrame {
         redrawBoard();
     }
 
+    private void generateBoard() {
+    	currentBoard = new SDKBoard();
+    	SudokuBot solver = new SudokuBot(currentBoard);
+        currentBoard = solver.getSolution();
+        // TODO add box to select difficulty
+        currentBoard.updateConstraints();
+        SDKMask mask = LastRemainingMaskFactory.createMaskForBoard(currentBoard, 81);
+        currentBoard = mask.applyTo(currentBoard);
+        redrawBoard();
+    }
+    
     private void clearBoard() {
         // clear to blank board
         if (editBoard.isSelected()) {
@@ -346,7 +357,7 @@ public class Main extends javax.swing.JFrame {
     }//GEN-LAST:event_editBoardActionPerformed
 
     private void generateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_generateButtonActionPerformed
-        // TODO generateButton
+    	generateBoard();
     }//GEN-LAST:event_generateButtonActionPerformed
 
     private void solveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_solveButtonActionPerformed
