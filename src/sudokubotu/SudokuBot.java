@@ -30,6 +30,7 @@ public class SudokuBot {
                     System.out.println("Brute Force Solver Failed");
                 }
             }
+            System.out.println("Unique?" + isUnique());
 
         }
 
@@ -111,16 +112,20 @@ public class SudokuBot {
 
     private boolean bruteForceSolve() {
         // brute force solve
-        int[][] simpleBoard = new int[solver.getN()][solver.getN()];
+        int[][] simpleBoard = board.getSimpleBoard();
         if (solve(0, 0, simpleBoard)) {
             solver.loadSimpleBoard(simpleBoard);
             return true;
         }
+        /*        if (solveReverse(solver.getN()-1, solver.getN()-1, simpleBoard)) {
+        solver.loadSimpleBoard(simpleBoard);
+        return true;
+        }*/
         return false;
     }
 
     private boolean solve(int i, int j, int[][] cells) {
-        // TODO random generation
+        // i and j must start at 0
         if (i == solver.getN()) {
             i = 0;
             if (++j == solver.getN()) {
@@ -141,6 +146,50 @@ public class SudokuBot {
             }
         }
         cells[i][j] = 0; // reset on backtrack
+        return false;
+    }
+
+    private boolean solveReverse(int i, int j, int[][] cells) {
+        // TODO reverse solve
+        // i and j start at N-1 for the board
+        if (i == -1) {
+            i = solver.getN() - 1;
+            if (--j == -1) {
+                return true;
+            }
+        }
+        if (cells[i][j] != 0) // skip filled cells
+        {
+            return solveReverse(i - 1, j, cells);
+        }
+
+        for (int val = 1; val <= solver.getN(); ++val) {
+            if (legal(i, j, val, cells)) {//valid
+                cells[i][j] = val;
+                if (solveReverse(i - 1, j, cells)) {
+                    return true;
+                }
+            }
+        }
+        cells[i][j] = 0; // reset on backtrack
+        return false;
+    }
+
+    boolean isUnique() {
+        int[][] solveForward = board.getSimpleBoard();
+        int[][] solveBackward = board.getSimpleBoard();
+        if (solve(0, 0, solveForward)) {
+            if (solveReverse(solver.getN() - 1, solver.getN() - 1, solveBackward)) {
+                for (int row = 0; row < solver.getN(); row++) {
+                    for (int col = 0; col < solver.getN(); col++) {
+                        if(solveForward[row][col] != solveBackward[row][col]){
+                            return false;
+                        }
+                    }
+                }
+                return true; // if solving foreward and backward are equiv
+            }
+        }
         return false;
     }
 
