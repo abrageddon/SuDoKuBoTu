@@ -63,16 +63,21 @@ public class Main extends javax.swing.JFrame {
     }
 
     private void generateBoard() {
-    	currentBoard = new SDKBoard();
-    	SudokuBot solver = new SudokuBot(currentBoard);
-        currentBoard = solver.getSolution();
+        startEdit();
+        clearBoard();
+        SudokuBot solver = new SudokuBot(new SDKBoard(currentBoard.getN()));
+        // TODO needs random seed
+        SDKBoard generated = solver.getSolution();
         // TODO add box to select difficulty
-        currentBoard.updateConstraints();
-        SDKMask mask = LastRemainingMaskFactory.createMaskForBoard(currentBoard, 81);
-        currentBoard = mask.applyTo(currentBoard);
+        generated.updateConstraints();
+        SDKMask mask = LastRemainingMaskFactory.createMaskForBoard(generated, 81);
+        System.out.println(mask);
+        currentBoard = mask.applyTo(generated);
+        endEdit();
+        initBoard();
         redrawBoard();
     }
-    
+
     private void clearBoard() {
         // clear to blank board
         if (editBoard.isSelected()) {
@@ -357,7 +362,7 @@ public class Main extends javax.swing.JFrame {
     }//GEN-LAST:event_editBoardActionPerformed
 
     private void generateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_generateButtonActionPerformed
-    	generateBoard();
+        generateBoard();
     }//GEN-LAST:event_generateButtonActionPerformed
 
     private void solveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_solveButtonActionPerformed
@@ -425,7 +430,6 @@ public class Main extends javax.swing.JFrame {
     private javax.swing.JTextField[][] SDKSquares;
 
     private void initBoard() {
-
         initZones();
         initSquares();
         BoardBack.updateUI();
@@ -563,8 +567,6 @@ public class Main extends javax.swing.JFrame {
             }
             initBoard();
             redrawBoard();
-            BoardBack.updateUI();
-
         } else {
             System.out.print("Open command cancelled by user." + "\n");
         }

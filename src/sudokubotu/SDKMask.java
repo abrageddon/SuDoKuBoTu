@@ -34,6 +34,10 @@ public class SDKMask {
                 if (mask.isSquareLocked(row, col))
                 {
                     combined.setSquareLock(row, col, false);
+                    combined.setSquareValue(row, col, solved.getSquareValue(row, col));
+                    combined.setSquareLock(row, col, true);
+                }else{
+                    combined.setSquareLock(row, col, false);
                     combined.setSquareValue(row, col, 0);
                 }
             }
@@ -45,9 +49,9 @@ public class SDKMask {
     public String toString() {
         String out = "";
 
-        for (int col = 0; col < mask.getN(); col++) {
-            for (int row = 0; row < mask.getN(); row++) {
-                out += get(row, col) + " ";
+        for (int row = 0; row < mask.getN(); row++) {
+            for (int col = 0; col < mask.getN(); col++) {
+                out += (get(row, col)?"1":"0") + " ";
             }
             out += "\n";
         }
