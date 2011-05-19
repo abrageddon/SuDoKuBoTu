@@ -23,14 +23,13 @@ public class SudokuBot {
                 difficulty = 1.2;
             } else {
                 System.out.println("Easy Solver Failed");
+                if (bruteForceSolve()) {
+                    System.out.println("Brute Force Solver Worked");
+                    difficulty = 10.0;
+                } else {
+                    System.out.println("Brute Force Solver Failed");
+                }
             }
-
-//            if (bruteForceSolve()) {
-//                System.out.println("Brute Force Solver Worked");
-//                difficulty = 10.0;
-//            } else {
-//                System.out.println("Brute Force Solver Failed");
-//            }
 
         }
 
@@ -56,13 +55,13 @@ public class SudokuBot {
     }
 
     private boolean easySolve() {
-//        solver.updateConstraints();
+        solver.updateConstraints();
 
         while (!solver.isSolved()) {
             Point mcv = mostConstrainedValue();
 
             //DEBUG
-            System.out.println(mcv + " <-mcv- " + solver.getSquarePossible(mcv.x, mcv.y));
+//            System.out.println(mcv + " <-mcv- " + solver.getSquarePossible(mcv.x, mcv.y));
 
             if (!setSoleCandidate(mcv)) {
                 return false;
@@ -81,7 +80,7 @@ public class SudokuBot {
                 int soleCandidate = (Integer) value.next();
 
                 //DEBUG
-                System.out.println(mcv + " -try-> " + soleCandidate);
+//                System.out.println(mcv + " -try-> " + soleCandidate);
 
                 solver.setSquareValue(mcv.x, mcv.y, soleCandidate);
 
@@ -90,7 +89,7 @@ public class SudokuBot {
             }
         } else {
             return false; // no sole candidate
-        } 
+        }
         return true;
     }
 
@@ -111,9 +110,67 @@ public class SudokuBot {
     }
 
     private boolean bruteForceSolve() {
-        //TODO brute force solve
-
+        // brute force solve
+        int[][] simpleBoard = new int[solver.getN()][solver.getN()];
+        if (solve(0, 0, simpleBoard)) {
+            solver.loadSimpleBoard(simpleBoard);
+            return true;
+        }
         return false;
+    }
+
+    private boolean solve(int i, int j, int[][] cells) {
+        // TODO random generation
+        if (i == solver.getN()) {
+            i = 0;
+            if (++j == solver.getN()) {
+                return true;
+            }
+        }
+        if (cells[i][j] != 0) // skip filled cells
+        {
+            return solve(i + 1, j, cells);
+        }
+
+        for (int val = 1; val <= solver.getN(); ++val) {
+            if (legal(i, j, val, cells)) {//valid
+                cells[i][j] = val;
+                if (solve(i + 1, j, cells)) {
+                    return true;
+                }
+            }
+        }
+        cells[i][j] = 0; // reset on backtrack
+        return false;
+    }
+
+    boolean legal(int i, int j, int val, int[][] cells) {
+        for (int k = 0; k < solver.getN(); ++k) // row
+        {
+            if (val == cells[k][j]) {
+                return false;
+            }
+        }
+
+        for (int k = 0; k < solver.getN(); ++k) // col
+        {
+            if (val == cells[i][k]) {
+                return false;
+            }
+        }
+
+        int boxRowOffset = (i / solver.getZonesInRow()) * solver.getZonesInRow();
+        int boxColOffset = (j / solver.getZonesInRow()) * solver.getZonesInRow();
+        for (int k = 0; k < solver.getZonesInRow(); ++k) // box
+        {
+            for (int m = 0; m < solver.getZonesInRow(); ++m) {
+                if (val == cells[boxRowOffset + k][boxColOffset + m]) {
+                    return false;
+                }
+            }
+        }
+
+        return true; // no violations, so it's legal
     }
 
     private void initSolverBoard() {

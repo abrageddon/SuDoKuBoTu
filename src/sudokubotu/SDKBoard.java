@@ -45,6 +45,10 @@ public class SDKBoard {
         updateConstraints();
     }
 
+    SDKBoard(SDKBoard solved) {
+        this(solved.board);
+    }
+
     public SDKSquare[][] copyBoard() {
         SDKSquare[][] copy = new SDKSquare[getN()][getN()];
         for (int row = 0; row < getN(); row++) {
@@ -405,11 +409,34 @@ public class SDKBoard {
         int clues = 0;
         for (int row = 0; row < getN(); row++) {
             for (int col = 0; col < getN(); col++) {
-                if (board[row][col].isLocked()){
+                if (board[row][col].isLocked()) {
                     clues++;
                 }
             }
         }
         return clues;
+    }
+
+    int[][] getSimpleBoard() {
+        int[][] simpleBoard = new int[getN()][getN()];
+        for (int row = 0; row < getN(); row++) {
+            for (int col = 0; col < getN(); col++) {
+                simpleBoard[row][col] = board[row][col].getValue();
+            }
+        }
+        return simpleBoard;
+    }
+
+    void loadSimpleBoard(int[][] simpleBoard) {
+        if(simpleBoard.length == board.length){
+        for (int row = 0; row < getN(); row++) {
+            for (int col = 0; col < getN(); col++) {
+                board[row][col].setLocked(false);
+                board[row][col].setValue(simpleBoard[row][col]);
+                if (simpleBoard[row][col] != 0){
+                    board[row][col].setLocked(true);
+                }
+            }
+        }}
     }
 }

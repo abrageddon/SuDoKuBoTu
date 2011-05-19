@@ -71,11 +71,11 @@ public class SDKSquare {
 
     public HashSet<Integer> getPossible (){
         // Return a copy of possible values
-//        HashSet<Integer> ret = new HashSet<Integer>((possible!=null?possible.size():0));
-//        for (int posVal:possible){
-//            ret.add(posVal);
-//        }
-        return possible;
+        HashSet<Integer> ret = new HashSet<Integer>((possible!=null?possible.size():0));
+        for (int posVal:possible){
+            ret.add(posVal);
+        }
+        return ret;
     }
 
     void clearPossible() {
