@@ -47,6 +47,7 @@ public class SDKMask {
                 }
             }
         }
+        combined.updateConstraints();
         return combined;
     }
     

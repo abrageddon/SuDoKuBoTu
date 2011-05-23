@@ -74,20 +74,9 @@ public class Main extends javax.swing.JFrame {
         startEdit();
         clearBoard();
         
-        Grid grid = new Grid();
-        BruteForceAnalysis analyser = new BruteForceAnalysis(true);
-        boolean result = analyser.solveRandom(grid, new Random());
-        assert result;
-        Grid solution = new Grid();
-        grid.copyTo(solution);
+        SDKBoard generated = SDKBoard.generateSolvedBoard();
         
-        SDKBoard generated = new SDKBoard();
-        for ( SDKSquare s : generated.getAllSquares() ) {
-        	int val = solution.getCellValue(s.row, s.col);
-        	s.setValue(val);
-        }
-        
-        SDKMask mask = LastRemainingMaskFactory.createMaskForBoard(generated, 81);
+        SDKMask mask = DirectHiddenPairMaskFactory.createMaskForBoard(generated, generated.getN()*generated.getN());
         
         currentBoard = mask.applyTo(generated);
         endEdit();
@@ -396,32 +385,9 @@ public class Main extends javax.swing.JFrame {
     }//GEN-LAST:event_rankButtonActionPerformed
 
     private void rankBoard() {
-    	diuf.sudoku.Grid grid = new Grid();
-    	BruteForceAnalysis bfa = new BruteForceAnalysis(false);
-    	for(SDKSquare s : currentBoard.getAllSquares()){
-            if (s.isLocked()){
-    		grid.setCellValue(s.row, s.col, s.getValue());
-            }
-        }
-    	Solver solver = new diuf.sudoku.solver.Solver(grid);
-        solver.rebuildPotentialValues();
-        try {
-        	if ( bfa.getCountSolutions(grid) > 1)
-        		throw new UnsupportedOperationException("Invalid number of solutions");
-            Map<Rule,Integer> rules = solver.solve(null);
-            double difficulty = 0;
-            String hardestRule = "";
-            for (Rule rule : rules.keySet()) {
-                if (rule.getDifficulty() > difficulty) {
-                    difficulty = rule.getDifficulty();
-                    hardestRule = rule.getName();
-                }
-            }
-            System.out.println("hardest rule:" + hardestRule);
-            System.out.println("difficulty:" + difficulty);
-        } catch (UnsupportedOperationException ex) {
-            System.out.println(ex.getMessage());
-        }
+    	SDKAnalysis rank = new SDKAnalysis(currentBoard);
+    	System.out.println("hardest rule: " +rank.getHardestRule());
+    	System.out.println("difficulty: " + rank.getRank());
 	}
 
 	private void editButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editButtonActionPerformed
