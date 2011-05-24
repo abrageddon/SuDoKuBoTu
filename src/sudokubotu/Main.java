@@ -5,19 +5,13 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Point;
 import java.io.File;
-import java.util.Map;
-import java.util.Random;
 import java.util.Set;
+
 import javax.swing.BorderFactory;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-
-import diuf.sudoku.Grid;
-import diuf.sudoku.solver.Rule;
-import diuf.sudoku.solver.Solver;
-import diuf.sudoku.solver.checks.BruteForceAnalysis;
 
 /**
  *
@@ -72,35 +66,35 @@ public class Main extends javax.swing.JFrame {
     private void generateBoard() {
         startEdit();
         clearBoard();
-        SDKBoard seed = new SDKBoard(currentBoard.getN());
-        int seedCount = 0;
-        Random rand = new Random();
-        int row = rand.nextInt(seed.getN());
-        int column = rand.nextInt(seed.getN());
-        int max = rand.nextInt((seed.getN() * seed.getN()) / 2);
-        while (seedCount < max) {
-            if (seed.getSquareValue(row, column) == 0) {
-                seed.setSquareValue(row, column, rand.nextInt(seed.getN() + 1));
-                if (!seed.conflictedSquares().isEmpty()) {
-                    seed.setSquareValue(row, column, 0);
-                } else {
-                    seed.setSquareLock(row, column, true);
-                }
-            }
-            row = rand.nextInt(seed.getN());
-            column = rand.nextInt(seed.getN());
-            seedCount++;
+
+        
+        String[] options = {"Last Remaining"
+                , "Hidden Single"
+                , "Direct Hidden Pair"};
+
+
+        Object answer = JOptionPane.showInputDialog(rootPane
+                , "Generate Difficulty\n\nWith Rule: "
+                , "Generate Difficulty"
+                , JOptionPane.PLAIN_MESSAGE
+                , null, options
+                , 0);
+
+
+        SDKBoard generated = SDKBoard.generateSolvedBoard();
+        SDKMask mask = null;
+
+        if ("Last Remaining" == answer) {
+            mask = LastRemainingMaskFactory.createMaskForBoard(generated, generated.getN() * generated.getN());
+        } else if ("Hidden Single" == answer) {
+            mask = HiddenSingleMaskFactory.createMaskForBoard(generated, generated.getN() * generated.getN());
+        } else if ("Direct Hidden Pair" == answer) {
+            mask = DirectHiddenPairMaskFactory.createMaskForBoard(generated, generated.getN() * generated.getN());
         }
-//        System.out.println(seed.toString());//DEBUG
 
-        SudokuBot solver = new SudokuBot(seed);
-
-        SDKBoard generated = solver.getSolution();
-        // TODO add box to select difficulty
-//        generated.updateConstraints();
-        SDKMask mask = LastRemainingMaskFactory.createMaskForBoard(generated, 81);
-//        System.out.println(mask);//DEBUG
-        currentBoard = mask.applyTo(generated);
+        if (mask != null) {
+            currentBoard = mask.applyTo(generated);
+        }
         endEdit();
         initBoard();
         redrawBoard();
@@ -402,42 +396,18 @@ public class Main extends javax.swing.JFrame {
     }//GEN-LAST:event_solveBoardActionPerformed
 
     private void rankButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rankButtonActionPerformed
-        // TODO calculate and display difficulty in GUI
         rankBoard();
     }//GEN-LAST:event_rankButtonActionPerformed
 
     private void rankBoard() {
-        diuf.sudoku.Grid grid = new Grid();
-        BruteForceAnalysis bfa = new BruteForceAnalysis(false);
-        for (SDKSquare s : currentBoard.getAllSquares()) {
-            if (s.isLocked()) {
-                grid.setCellValue(s.row, s.col, s.getValue());
-            }
-        }
-        Solver solver = new diuf.sudoku.solver.Solver(grid);
-        solver.rebuildPotentialValues();
-        try {
-            if (bfa.getCountSolutions(grid) > 1) {
-                throw new UnsupportedOperationException("Invalid number of solutions");
-            }
-            Map<Rule, Integer> rules = solver.solve(null);
-            double difficulty = 0;
-            String hardestRule = "";
-            for (Rule rule : rules.keySet()) {
-                if (rule.getDifficulty() > difficulty) {
-                    difficulty = rule.getDifficulty();
-                    hardestRule = rule.getName();
-                }
-            }
-            System.out.println("hardest rule:" + hardestRule);
-            System.out.println("difficulty:" + difficulty);
-        } catch (UnsupportedOperationException ex) {
-            System.out.println(ex.getMessage());
-        }
+        SDKAnalysis rank = new SDKAnalysis(currentBoard);
+        // TODO popup rank
+        System.out.println("hardest rule: " + rank.getHardestRule());
+        System.out.println("difficulty: " + rank.getRank());
     }
 
 	private void editButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editButtonActionPerformed
-            // TODO edit mode button
+            // edit mode button
             if (editMode) {
                 endEdit();
             } else {

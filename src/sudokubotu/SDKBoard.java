@@ -10,8 +10,12 @@ import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Random;
 import java.util.Set;
 import java.util.StringTokenizer;
+
+import diuf.sudoku.Grid;
+import diuf.sudoku.solver.checks.BruteForceAnalysis;
 
 /**
  *
@@ -36,7 +40,7 @@ public class SDKBoard {
         board = new SDKSquare[newBoard.length][newBoard.length];
         for (int row = 0; row < getN(); row++) {
             for (int col = 0; col < getN(); col++) {
-                board[row][col] = new SDKSquare(newBoard[row][col].getValue(), newBoard[row][col].isLocked(),row,col);
+                board[row][col] = new SDKSquare(newBoard[row][col].getValue(), newBoard[row][col].isLocked(), row, col);
                 for (int posVal : newBoard[row][col].getPossible()) {
                     board[row][col].addPossible(posVal);
                 }
@@ -53,7 +57,7 @@ public class SDKBoard {
         SDKSquare[][] copy = new SDKSquare[getN()][getN()];
         for (int row = 0; row < getN(); row++) {
             for (int col = 0; col < getN(); col++) {
-                copy[row][col] = new SDKSquare(board[row][col].getValue(), board[row][col].isLocked(),row,col);
+                copy[row][col] = new SDKSquare(board[row][col].getValue(), board[row][col].isLocked(), row, col);
                 for (int posVal : board[row][col].getPossible()) {
                     copy[row][col].addPossible(posVal);
                 }
@@ -61,6 +65,23 @@ public class SDKBoard {
         }
 
         return copy;
+    }
+
+    public static SDKBoard generateSolvedBoard() {
+        Grid grid = new Grid();
+        BruteForceAnalysis analyser = new BruteForceAnalysis(true);
+        boolean result = analyser.solveRandom(grid, new Random());
+        assert result;
+        Grid solution = new Grid();
+        grid.copyTo(solution);
+
+        SDKBoard generated = new SDKBoard();
+        for (SDKSquare s : generated.getAllSquares()) {
+            int val = solution.getCellValue(s.row, s.col);
+            s.setValue(val);
+        }
+
+        return generated;
     }
 
     public Integer getSquareValue(Integer row, Integer col) {
@@ -90,7 +111,7 @@ public class SDKBoard {
             board = new SDKSquare[newN][newN];
             for (int i = 0; i < newN; i++) {
                 for (int j = 0; j < newN; j++) {
-                    board[i][j] = new SDKSquare(i,j);
+                    board[i][j] = new SDKSquare(i, j);
                 }
             }
         }
@@ -418,15 +439,15 @@ public class SDKBoard {
     }
 
     public LinkedList<SDKSquare> getAllSquares() {
-    	LinkedList<SDKSquare> squares = new LinkedList<SDKSquare>();
-    	for (int row = 0; row < getN(); row++) {
+        LinkedList<SDKSquare> squares = new LinkedList<SDKSquare>();
+        for (int row = 0; row < getN(); row++) {
             for (int col = 0; col < getN(); col++) {
                 squares.add(board[row][col]);
             }
         }
-    	return squares;
+        return squares;
     }
-    
+
     int[][] getSimpleBoard() {
         int[][] simpleBoard = new int[getN()][getN()];
         for (int row = 0; row < getN(); row++) {
@@ -437,22 +458,62 @@ public class SDKBoard {
         return simpleBoard;
     }
 
-
-    
-    void loadSimpleBoard(int[][] simpleBoard) {
-        if(simpleBoard.length == board.length){
-        for (int row = 0; row < getN(); row++) {
-            for (int col = 0; col < getN(); col++) {
-                board[row][col].setLocked(false);
-                board[row][col].setValue(simpleBoard[row][col]);
-                if (simpleBoard[row][col] != 0){
-                    board[row][col].setLocked(true);
-                }
+    public LinkedList<SDKSquare> getAllSquaresWithClues() {
+        LinkedList<SDKSquare> squares = getAllSquares();
+        LinkedList<SDKSquare> ret = new LinkedList<SDKSquare>();
+        for (SDKSquare s : squares) {
+            if (s.isLocked()) {
+                ret.add(s);
             }
-        }}
+        }
+        return ret;
     }
 
-    void rearrange() {
-        // TODO pillar column row and ribbon permutations
+    public LinkedList<SDKSquare> getSquaresInZone(int zone) {
+        LinkedList<SDKSquare> squares = new LinkedList<SDKSquare>();
+        HashMap<Point, Integer> hm = getBoardZone(zone);
+        for (Point p : hm.keySet()) {
+            squares.add(board[p.x][p.y]);
+        }
+        return squares;
+    }
+
+    public LinkedList<SDKSquare> getSquaresInZone(SDKSquare square) {
+        return getSquaresInZone(identifyZone(square.row, square.col));
+    }
+
+    void loadSimpleBoard(int[][] simpleBoard) {
+        if (simpleBoard.length == board.length) {
+            for (int row = 0; row < getN(); row++) {
+                for (int col = 0; col < getN(); col++) {
+                    board[row][col].setLocked(false);
+                    board[row][col].setValue(simpleBoard[row][col]);
+                    if (simpleBoard[row][col] != 0) {
+                        board[row][col].setLocked(true);
+                    }
+                }
+            }
+        }
+    }
+
+//    void rearrange() {
+//        // TODO pillar column row and ribbon permutations
+//    }
+
+    public LinkedList<SDKSquare> getSquaresInRow(int row) {
+
+        LinkedList<SDKSquare> squares = new LinkedList<SDKSquare>();
+        for (Point p : getBoardRow(row).keySet()) {
+            squares.add(board[p.x][p.y]);
+        }
+        return squares;
+    }
+
+    public LinkedList<SDKSquare> getSquaresInCol(int col) {
+        LinkedList<SDKSquare> squares = new LinkedList<SDKSquare>();
+        for (Point p : getBoardCol(col).keySet()) {
+            squares.add(board[p.x][p.y]);
+        }
+        return squares;
     }
 }
