@@ -325,8 +325,8 @@ public class SDKBoard {
     public String toString() {
         String out = "";
 
-        for (int col = 0; col < getN(); col++) {
-            for (int row = 0; row < getN(); row++) {
+        for (int row = 0; row < getN(); row++) {
+            for (int col = 0; col < getN(); col++) {
                 out += getSquareValue(row, col) + " ";
             }
             out += "\n";
@@ -450,5 +450,9 @@ public class SDKBoard {
                 }
             }
         }}
+    }
+
+    void rearrange() {
+        // TODO pillar column row and ribbon permutations
     }
 }

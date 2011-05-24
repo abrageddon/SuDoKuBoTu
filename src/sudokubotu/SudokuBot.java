@@ -1,16 +1,17 @@
 package sudokubotu;
 
 import diuf.sudoku.Grid;
+import diuf.sudoku.solver.Rule;
 import diuf.sudoku.solver.Solver;
 import diuf.sudoku.solver.checks.BruteForceAnalysis;
 import java.awt.Point;
 import java.util.Iterator;
+import java.util.Map;
 
 public class SudokuBot {
 
     private SDKBoard board;
     private SDKBoard solver;
-    private double difficulty = 0.0;
 
     public SudokuBot(SDKBoard currentBoard) {
         board = new SDKBoard(currentBoard.copyBoard());
@@ -23,12 +24,10 @@ public class SudokuBot {
 
             if (easySolve()) {
                 System.out.println("Easy Solver Worked");
-                difficulty = 1.2;
             } else {
                 System.out.println("Easy Solver Failed");
                 if (bruteForceSolve()) {
                     System.out.println("Brute Force Solver Worked");
-                    difficulty = 10.0;
                 } else {
                     System.out.println("Brute Force Solver Failed");
                 }
@@ -50,12 +49,31 @@ public class SudokuBot {
 
     public double getBoardDifficulty() {
         // TODO calculate difficulty
-
-        if (!solver.isSolved()) {//solve if not solved yet
-            getSolution();
+        diuf.sudoku.Grid grid = new Grid();
+        BruteForceAnalysis bfa = new BruteForceAnalysis(false);
+        for (SDKSquare s : board.getAllSquares()) {
+            if (s.isLocked()) {
+                grid.setCellValue(s.row, s.col, s.getValue());
+            }
         }
-
-        return difficulty;
+        Solver solver = new diuf.sudoku.solver.Solver(grid);
+        solver.rebuildPotentialValues();
+        try {
+            if (bfa.getCountSolutions(grid) > 1) {
+                throw new UnsupportedOperationException("Invalid number of solutions");
+            }
+            Map<Rule, Integer> rules = solver.solve(null);
+            double difficulty = 0;
+            for (Rule rule : rules.keySet()) {
+                if (rule.getDifficulty() > difficulty) {
+                    difficulty = rule.getDifficulty();
+                }
+            }
+            return difficulty;
+        } catch (UnsupportedOperationException ex) {
+            System.out.println(ex.getMessage());
+        }
+        return 0.0;
     }
 
     private boolean easySolve() {
@@ -212,8 +230,7 @@ public class SudokuBot {
     }
 
     boolean legal(int i, int j, int val, int[][] cells) {
-        for (int k = 0; k
-                < solver.getN();
+        for (int k = 0; k < solver.getN();
                 ++k) // row
         {
             if (val == cells[k][j]) {
@@ -221,8 +238,7 @@ public class SudokuBot {
             }
         }
 
-        for (int k = 0; k
-                < solver.getN();
+        for (int k = 0; k < solver.getN();
                 ++k) // col
         {
             if (val == cells[i][k]) {

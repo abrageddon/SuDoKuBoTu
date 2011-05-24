@@ -73,26 +73,28 @@ public class Main extends javax.swing.JFrame {
         startEdit();
         clearBoard();
         SDKBoard seed = new SDKBoard(currentBoard.getN());
-        int seedCount =0;
+        int seedCount = 0;
         Random rand = new Random();
         int row = rand.nextInt(seed.getN());
         int column = rand.nextInt(seed.getN());
-        int max = rand.nextInt((seed.getN()*seed.getN())/2);
-        while(seedCount < max){
-        	if(seed.getSquareValue(row, column)==0){
-        		seed.setSquareValue(row, column, rand.nextInt(seed.getN()+1));
-        		if( !seed.conflictedSquares().isEmpty() )
-            		seed.setSquareValue(row, column, 0);
-        		else
-        			seed.setSquareLock(row, column, true);
-        	}
-        	row = rand.nextInt(seed.getN());
-    		column = rand.nextInt(seed.getN());
-        	seedCount ++;
+        int max = rand.nextInt((seed.getN() * seed.getN()) / 2);
+        while (seedCount < max) {
+            if (seed.getSquareValue(row, column) == 0) {
+                seed.setSquareValue(row, column, rand.nextInt(seed.getN() + 1));
+                if (!seed.conflictedSquares().isEmpty()) {
+                    seed.setSquareValue(row, column, 0);
+                } else {
+                    seed.setSquareLock(row, column, true);
+                }
+            }
+            row = rand.nextInt(seed.getN());
+            column = rand.nextInt(seed.getN());
+            seedCount++;
         }
-        System.out.println(seed.toString());
+//        System.out.println(seed.toString());//DEBUG
+
         SudokuBot solver = new SudokuBot(seed);
-        
+
         SDKBoard generated = solver.getSolution();
         // TODO add box to select difficulty
 //        generated.updateConstraints();
@@ -401,23 +403,24 @@ public class Main extends javax.swing.JFrame {
 
     private void rankButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rankButtonActionPerformed
         // TODO calculate and display difficulty in GUI
-    	rankBoard();
+        rankBoard();
     }//GEN-LAST:event_rankButtonActionPerformed
 
     private void rankBoard() {
-    	diuf.sudoku.Grid grid = new Grid();
-    	BruteForceAnalysis bfa = new BruteForceAnalysis(false);
-    	for(SDKSquare s : currentBoard.getAllSquares()){
-            if (s.isLocked()){
-    		grid.setCellValue(s.row, s.col, s.getValue());
+        diuf.sudoku.Grid grid = new Grid();
+        BruteForceAnalysis bfa = new BruteForceAnalysis(false);
+        for (SDKSquare s : currentBoard.getAllSquares()) {
+            if (s.isLocked()) {
+                grid.setCellValue(s.row, s.col, s.getValue());
             }
         }
-    	Solver solver = new diuf.sudoku.solver.Solver(grid);
+        Solver solver = new diuf.sudoku.solver.Solver(grid);
         solver.rebuildPotentialValues();
         try {
-        	if ( bfa.getCountSolutions(grid) > 1)
-        		throw new UnsupportedOperationException("Invalid number of solutions");
-            Map<Rule,Integer> rules = solver.solve(null);
+            if (bfa.getCountSolutions(grid) > 1) {
+                throw new UnsupportedOperationException("Invalid number of solutions");
+            }
+            Map<Rule, Integer> rules = solver.solve(null);
             double difficulty = 0;
             String hardestRule = "";
             for (Rule rule : rules.keySet()) {
@@ -431,15 +434,15 @@ public class Main extends javax.swing.JFrame {
         } catch (UnsupportedOperationException ex) {
             System.out.println(ex.getMessage());
         }
-	}
+    }
 
 	private void editButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editButtonActionPerformed
-        // TODO edit mode button
-        if (editMode) {
-            endEdit();
-        } else {
-            startEdit();
-        }
+            // TODO edit mode button
+            if (editMode) {
+                endEdit();
+            } else {
+                startEdit();
+            }
     }//GEN-LAST:event_editButtonActionPerformed
 
     private void SDKSquaresFocusGained(java.awt.event.FocusEvent evt) {
