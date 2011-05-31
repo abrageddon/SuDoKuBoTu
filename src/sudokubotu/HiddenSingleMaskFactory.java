@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Random;
 
+
 //buildign a csp is a csp?
 
 public class HiddenSingleMaskFactory extends SDKMaskFactory {
@@ -13,6 +14,61 @@ public class HiddenSingleMaskFactory extends SDKMaskFactory {
 	// decide to remove or not if it turns into a hidden single hint
 	// if it does then check if it causes others to go beyond hidden single
 	// if so then undo
+	
+	private static class HSVertexExpander implements VertexExpander<SDKMask> {
+		
+		@Override
+		public Iterable<SDKMask> expand(SDKMask mask) {
+			LinkedList<SDKMask> masks = new LinkedList<SDKMask>();
+			LinkedList<SDKSquare> squares = mask.mask.getAllSquaresWithClues();
+			for(SDKSquare s : squares) {
+				SDKMask nextMask = new SDKMask();
+				nextMask.mask = new SDKBoard(mask.mask.copyBoard());
+				nextMask.set(s.row, s.col, false);
+				masks.add(nextMask);
+			}
+			Collections.shuffle(masks);
+			return masks;
+		}
+		
+	}
+	
+	private static class HSGoalCondition implements Condition<SDKMask> {
+
+		SDKBoard board;
+		public HSGoalCondition(SDKBoard board) {
+			this.board = board;
+		}
+		@Override
+		public boolean satisfiedWith(SDKMask e) {
+			SDKBoard tempBoard = e.applyTo(board);
+			tempBoard.updateConstraints();
+			for(SDKSquare s : tempBoard.getAllSquares()) {
+				boolean isHiddenSingle = HiddenSingleMaskFactory.isHiddenSingle(s, board);
+				if ( isHiddenSingle )
+					return true;
+			}
+			return false;
+		}
+		
+	}
+	
+	private static class HSFailCondition implements Condition<SDKMask> {
+
+		private SDKBoard board;
+		
+		public HSFailCondition(SDKBoard board) {
+			this.board = board;
+		}
+			
+		@Override
+		public boolean satisfiedWith(SDKMask e) {
+			SDKBoard tempBoard = e.applyTo(board);
+			
+			return !SDKAnalysis.hasUniqueSolution(tempBoard);
+		}
+		
+	}
 	
 	public static boolean isHiddenSingle(SDKSquare s, SDKBoard board) {
 		LinkedList<SDKSquare> zsqrs = board.getSquaresInZone(s);
@@ -34,7 +90,7 @@ public class HiddenSingleMaskFactory extends SDKMaskFactory {
 		for(SDKSquare s2 : zsqrs)
 			zonePossibles.removeAll(s2.getPossible());
 		
-		return rowPossibles.size() + colPossibles.size() + zonePossibles.size() != 1;
+		return rowPossibles.size() + colPossibles.size() + zonePossibles.size() == 1;
 	}
 	
 	public static SDKMask createMaskForBoard(SDKBoard solvedBoard,int maxRemoved) {
@@ -50,30 +106,13 @@ public class HiddenSingleMaskFactory extends SDKMaskFactory {
 		
 		Collections.shuffle(squares);
 		
-		for(SDKSquare s : squares) {
-			int value = s.getValue();
-			if ( maxRemoved-- < 0 )
-				break;
-			try {
-				s.setLocked(false);
-				s.setValue(0);
-				board.updateConstraints();
-				//scan the block to see if there is a value in the domain where the current square is the only one
-				//do the same for columns and rows
-				if (isHiddenSingle(s,board))
-					throw new FailingRemoveException("Removing does not cause hidden single.");
-				
-				if (!SDKAnalysis.hasUniqueSolution(board))
-					throw new FailingRemoveException("The puzzle no longer has a unique solution.");
-				
-				mask.set(s.row, s.col, false);
-				
-			} catch (FailingRemoveException e){
-				s.setValue(value);
-				s.setLocked(true);
-			}
-		}
+		DepthGraphSearch<SDKMask> dgs = new DepthGraphSearch<SDKMask>(
+			mask,
+			new HSFailCondition(board), 
+			new HSGoalCondition(board), 
+			new HSVertexExpander()
+		);
 		
-		return mask;
+		return dgs.getGoalState();
 	}
 }
