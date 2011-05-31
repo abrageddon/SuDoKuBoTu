@@ -2,65 +2,11 @@ package sudokubotu;
 
 import java.util.Collections;
 import java.util.LinkedList;
+import java.util.Random;
 
 // 1.0 rating
 
 public class LastRemainingMaskFactory extends SDKMaskFactory {
-	
-	private static class LRVertexExpander implements VertexExpander<SDKMask> {
-		
-		@Override
-		public Iterable<SDKMask> expand(SDKMask mask) {
-			LinkedList<SDKMask> masks = new LinkedList<SDKMask>();
-			LinkedList<SDKSquare> squares = mask.mask.getAllSquaresWithClues();
-			for(SDKSquare s : squares) {
-				SDKMask nextMask = new SDKMask();
-				nextMask.mask = new SDKBoard(mask.mask.copyBoard());
-				nextMask.set(s.row, s.col, false);
-				masks.add(nextMask);
-			}
-			Collections.shuffle(masks);
-			return masks;
-		}
-		
-	}
-	
-	private static class LRGoalCondition implements Condition<SDKMask> {
-
-		SDKBoard board;
-		public LRGoalCondition(SDKBoard board) {
-			this.board = board;
-		}
-		@Override
-		public boolean satisfiedWith(SDKMask e) {
-			SDKBoard tempBoard = e.applyTo(board);
-			tempBoard.updateConstraints();
-			int clueCount = tempBoard.getNumberOfClues();
-			for(SDKSquare s : tempBoard.getAllSquares()) {
-				if ( !isLastRemaining(tempBoard, s) || 81 - clueCount < 8)
-					return false;
-			}
-			return true;
-		}
-		
-	}
-	
-	private static class LRFailCondition implements Condition<SDKMask> {
-
-		private SDKBoard board;
-		
-		public LRFailCondition(SDKBoard board) {
-			this.board = board;
-		}
-			
-		@Override
-		public boolean satisfiedWith(SDKMask e) {
-			SDKBoard tempBoard = e.applyTo(board);
-			
-			return !SDKAnalysis.hasUniqueSolution(tempBoard);
-		}
-		
-	}
 	
 	public static boolean isLastRemaining(SDKBoard board,SDKSquare square) {
 		LinkedList<SDKSquare> colSquares = board.getSquaresInCol(square.col);
@@ -88,13 +34,30 @@ public class LastRemainingMaskFactory extends SDKMaskFactory {
 		SDKMask mask = new SDKMask();
 		// randomly choose a position if removing position causes another to have one less than max domain size, undo
 		SDKBoard board = new SDKBoard(solvedBoard.copyBoard());
+		LinkedList<SDKSquare> squares = board.getAllSquares();
 		
-		DepthGraphSearch<SDKMask> dgs = new DepthGraphSearch<SDKMask>(
-			mask,
-			new LRFailCondition(board), 
-			new LRGoalCondition(board), 
-			new LRVertexExpander()
-		);
-		return dgs.getGoalState();
+		Collections.shuffle(squares);
+		
+		for ( SDKSquare square : squares ) {
+			int value = square.getValue();
+			try {
+				if ( maxRemoved-- < 0 )
+					break;
+				square.setLocked(false);
+				square.setValue(0);
+				board.updateConstraints();
+				
+				if ( !isLastRemaining(board,square) )
+					throw new FailingRemoveException("Causes other square's domain to be too large");
+				
+				mask.set(square.row, square.col, false);
+			} catch (FailingRemoveException e) {
+				// reset square before the remove
+				square.setValue(value);
+				square.setLocked(true);
+				board.updateConstraints();
+			}
+		}
+		return mask;
 	}
 }
