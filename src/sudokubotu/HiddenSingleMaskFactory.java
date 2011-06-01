@@ -3,7 +3,6 @@ package sudokubotu;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.Random;
 
 
 //buildign a csp is a csp?
@@ -43,9 +42,10 @@ public class HiddenSingleMaskFactory extends SDKMaskFactory {
 		public boolean satisfiedWith(SDKMask e) {
 			SDKBoard tempBoard = e.applyTo(board);
 			tempBoard.updateConstraints();
+			int emptyCount = tempBoard.getN()*tempBoard.getN() - tempBoard.getNumberOfClues();
 			for(SDKSquare s : tempBoard.getAllSquares()) {
-				boolean isHiddenSingle = HiddenSingleMaskFactory.isHiddenSingle(s, board);
-				if ( isHiddenSingle )
+				boolean isHiddenSingle = HiddenSingleMaskFactory.isHiddenSingle(s, tempBoard);
+				if ( isHiddenSingle && emptyCount > 30 )
 					return true;
 			}
 			return false;

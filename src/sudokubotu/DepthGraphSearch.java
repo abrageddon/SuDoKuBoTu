@@ -1,6 +1,5 @@
 package sudokubotu;
 
-import java.util.Collections;
 import java.util.HashSet;
 
 public class DepthGraphSearch<E> {
@@ -27,15 +26,13 @@ public class DepthGraphSearch<E> {
 		if ( goal != null || explored.contains(vertex))
 			return;
 		Iterable<E> i = vExp.expand(vertex);
-		System.out.println(vertex);
 		explored.add(vertex);
 		for(E e : i) {
 			if (explored.contains(e)) {
 				continue;
 			}
-				
-//			if ( fCond.satisfiedWith(e) )
-//				continue;
+			if ( fCond.satisfiedWith(e) )
+				continue;
 			if ( gCond.satisfiedWith(e) ) {
 				goal = e;
 				break;

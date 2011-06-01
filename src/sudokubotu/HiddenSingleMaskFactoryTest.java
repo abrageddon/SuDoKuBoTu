@@ -22,7 +22,7 @@ public class HiddenSingleMaskFactoryTest {
 			SDKMask m = HiddenSingleMaskFactory.createMaskForBoard(b, 81);
 			SDKBoard puzzle = m.applyTo(b);
 			SDKAnalysis rank = new SDKAnalysis(puzzle);
-			assertEquals(1.2,rank.getRank(),0.31);
+			assertEquals(1.2,rank.getRank(),0.1);
 		}
 	}
 	
