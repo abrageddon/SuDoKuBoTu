@@ -65,34 +65,35 @@ public class Main extends javax.swing.JFrame {
 
     private void generateBoard() {
         startEdit();
-        clearBoard();
-
-        
-        String[] options = {"Last Remaining"
-                , "Hidden Single"
-                , "Direct Hidden Pair"};
 
 
-        Object answer = JOptionPane.showInputDialog(rootPane
-                , "Generate Difficulty\n\nWith Rule: "
-                , "Generate Difficulty"
-                , JOptionPane.PLAIN_MESSAGE
-                , null, options
-                , 0);
+        String[] options = {"Last Remaining (Easy-1.0)"
+                , "Hidden Single (Easy-1.2)"
+                , "Direct Hidden Pair (Hard-2.0)"
+                , "Naked Single (Hard-2.3)"
+                /*, "Direct Hidden Triplet (2.5)"*/ };
+
+
+        Object answer = JOptionPane.showInputDialog(rootPane, "Generate Difficulty\n\nWith Rule: ", "Generate Difficulty", JOptionPane.PLAIN_MESSAGE, null, options, 0);
 
 
         SDKBoard generated = SDKBoard.generateSolvedBoard();
         SDKMask mask = null;
 
-        if ("Last Remaining" == answer) {
+        if (options[0] == answer) {
             mask = LastRemainingMaskFactory.createMaskForBoard(generated, generated.getN() * generated.getN());
-        } else if ("Hidden Single" == answer) {
+        } else if (options[1] == answer) {
             mask = HiddenSingleMaskFactory.createMaskForBoard(generated, generated.getN() * generated.getN());
-        } else if ("Direct Hidden Pair" == answer) {
+        } else if (options[2] == answer) {
             mask = DirectHiddenPairMaskFactory.createMaskForBoard(generated, generated.getN() * generated.getN());
-        }
+        } else if (options[3] == answer) {
+            mask = NakedSingleMaskFactory.createMaskForBoard(generated, generated.getN() * generated.getN());
+        } /* else if (options[4] == answer) {
+            mask = DirectHiddenTripletMaskFactory.createMaskForBoard(generated, generated.getN() * generated.getN());
+        }*/
 
         if (mask != null) {
+            clearBoard();
             currentBoard = mask.applyTo(generated);
         }
         endEdit();

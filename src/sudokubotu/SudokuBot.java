@@ -56,13 +56,13 @@ public class SudokuBot {
                 grid.setCellValue(s.row, s.col, s.getValue());
             }
         }
-        Solver solver = new diuf.sudoku.solver.Solver(grid);
-        solver.rebuildPotentialValues();
+        Solver expSolver = new diuf.sudoku.solver.Solver(grid);
+        expSolver.rebuildPotentialValues();
         try {
             if (bfa.getCountSolutions(grid) > 1) {
                 throw new UnsupportedOperationException("Invalid number of solutions");
             }
-            Map<Rule, Integer> rules = solver.solve(null);
+            Map<Rule, Integer> rules = expSolver.solve(null);
             double difficulty = 0;
             for (Rule rule : rules.keySet()) {
                 if (rule.getDifficulty() > difficulty) {
