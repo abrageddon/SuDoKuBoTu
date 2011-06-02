@@ -43,14 +43,25 @@ public class DirectHiddenPairMaskFactory extends SDKMaskFactory {
 		public boolean satisfiedWith(SDKMask e) {
 			SDKBoard tempBoard = e.applyTo(board);
 			tempBoard.updateConstraints();
+			boolean hasDirectHiddenPair = false;
+			for(SDKSquare s : tempBoard.getAllSquares()) {
+				if ( isDirectHiddenPair(s, tempBoard) ) {
+					hasDirectHiddenPair = true;
+					break;
+				}
+			}
+			
+			if ( !hasDirectHiddenPair )
+				return false;
+			
 			for(SDKSquare s : tempBoard.getAllSquares()) {
 				boolean isHiddenSingle = HiddenSingleMaskFactory.isHiddenSingle(s, board);
 				boolean isLastRemaining = LastRemainingMaskFactory.isLastRemaining(board, s);
-				boolean isDirectHiddenPair = isDirectHiddenPair(s,board);
-				if (!isHiddenSingle && !isLastRemaining && isDirectHiddenPair)
-					return true;
+				if ( isHiddenSingle || isLastRemaining )
+					return false;
 			}
-			return false;
+			
+			return true;
 		}
 		
 	}
@@ -99,7 +110,7 @@ public class DirectHiddenPairMaskFactory extends SDKMaskFactory {
 		boolean colHas = hasDirectPairThatSolves(csqrs,s,board);
 		boolean rowHas = hasDirectPairThatSolves(rsqrs,s,board);
 		
-		return ((zoneHas?1:0) + (colHas?1:0) + (rowHas?1:0) != 1);
+		return ((zoneHas?1:0) + (colHas?1:0) + (rowHas?1:0) == 1);
 	}
 
 	private static boolean hasDirectPairThatSolves( LinkedList<SDKSquare> sqrs, SDKSquare s, SDKBoard b ) {

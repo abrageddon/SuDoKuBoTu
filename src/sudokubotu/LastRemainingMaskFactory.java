@@ -1,7 +1,9 @@
 package sudokubotu;
 
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.Random;
 
 // 1.0 rating
 
@@ -23,9 +25,8 @@ public class LastRemainingMaskFactory extends SDKMaskFactory {
 				square.setLocked(false);
 				square.setValue(0);
 				board.updateConstraints();
-				for ( SDKSquare square2 : squares ) {
-					if ( square2.getPossible().size() > 1 )
-						throw new FailingRemoveException("Causes other square's domain to be too large");
+				if (!isLastRemaining(board,square)) {
+					throw new FailingRemoveException("bad");
 				}
 				mask.set(square.row, square.col, false);
 			} catch (FailingRemoveException e) {
@@ -36,5 +37,14 @@ public class LastRemainingMaskFactory extends SDKMaskFactory {
 			}
 		}
 		return mask;
+	}
+
+	public static boolean isLastRemaining(SDKBoard board, SDKSquare s) {
+		LinkedList<SDKSquare> squares = board.getAllSquares();
+		for ( SDKSquare square2 : squares ) {
+			if ( square2.getPossible().size() > 1 )
+				return false;
+		}
+		return true;
 	}
 }

@@ -23,7 +23,7 @@ public class DepthGraphSearch<E> {
 	}
 	
 	public void recDepthSearch(E vertex) {
-		if ( goal != null || explored.contains(vertex))
+		if ( goal != null )
 			return;
 		Iterable<E> i = vExp.expand(vertex);
 		explored.add(vertex);

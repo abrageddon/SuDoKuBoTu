@@ -57,26 +57,11 @@ public class SDKMask {
 
         for (int row = 0; row < mask.getN(); row++) {
             for (int col = 0; col < mask.getN(); col++) {
-                out += (get(row, col)?"1":"0");
+                out += (get(row, col)?"1":"0") + " ";
             }
             out += "\n";
         }
 
         return out;
-    }
-    
-    @Override
-    public int hashCode() {
-    	return this.toString().hashCode();
-    }
-    
-    @Override
-    public boolean equals(Object o) {
-    	SDKMask mask = (SDKMask) o;
-    	for(SDKSquare s : mask.mask.getAllSquares()) {
-    		if (this.get(s.row, s.col) != s.isLocked())
-    			return false;
-    	}
-    	return true;
     }
 }
