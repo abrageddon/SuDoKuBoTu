@@ -32,8 +32,10 @@ public class Generator {
      */
     public Grid generate(List<Symmetry> symmetries, double minDifficulty, double maxDifficulty) {
         assert !symmetries.isEmpty() : "No symmetries specified";
+        Grid ret = null;
         Random random = new Random();
         int symmetryIndex = random.nextInt(symmetries.size());
+        int genCount = 0;
         while (true) {
             // Generate a random grid
             Symmetry symmetry = symmetries.get(symmetryIndex);
@@ -41,7 +43,11 @@ public class Generator {
             Grid grid = generate(random, symmetry);
 
             if (isInterrupted)
-                return null;
+            {
+            	ret = null;
+            	break;
+            }
+             
 
             // Analyse difficulty
             Grid copy = new Grid();
@@ -49,13 +55,19 @@ public class Generator {
             Solver solver = new Solver(copy);
             solver.rebuildPotentialValues();
             double difficulty = solver.analyseDifficulty(minDifficulty, maxDifficulty);
-            if (difficulty >= minDifficulty && difficulty <= maxDifficulty)
-                return grid;
+            if (difficulty >= minDifficulty && difficulty <= maxDifficulty) {
+            	ret = grid;
+            	break;
+            }
+             
 
-            if (isInterrupted)
-                return null;
-
+            if (isInterrupted) {
+            	break;
+            }
+            genCount++;
         }
+        System.out.println(genCount);
+        return ret;
     }
 
     /**

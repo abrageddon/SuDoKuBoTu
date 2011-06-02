@@ -2,7 +2,6 @@ package sudokubotu;
 
 import java.util.Collections;
 import java.util.LinkedList;
-import java.util.Random;
 
 // 1.0 rating
 
