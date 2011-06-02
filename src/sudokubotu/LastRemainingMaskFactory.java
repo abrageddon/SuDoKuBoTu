@@ -8,28 +8,6 @@ import java.util.Random;
 
 public class LastRemainingMaskFactory extends SDKMaskFactory {
 	
-	public static boolean isLastRemaining(SDKBoard board,SDKSquare square) {
-		LinkedList<SDKSquare> colSquares = board.getSquaresInCol(square.col);
-		colSquares.remove(square);
-		for ( SDKSquare s : colSquares ) {
-			if ( !s.isLocked() )
-				return false;
-		}
-		LinkedList<SDKSquare> rowSquares = board.getSquaresInRow(square.row);
-		rowSquares.remove(square);
-		for ( SDKSquare s : rowSquares ) {
-			if ( !s.isLocked() )
-				return false;
-		}
-		LinkedList<SDKSquare> zoneSquares = board.getSquaresInZone(square);
-		zoneSquares.remove(square);
-		for ( SDKSquare s : zoneSquares ) {
-			if ( !s.isLocked() )
-				return false;
-		}
-		return true;
-	}
-	
 	public static SDKMask createMaskForBoard(SDKBoard solvedBoard,int maxRemoved) {
 		SDKMask mask = new SDKMask();
 		// randomly choose a position if removing position causes another to have one less than max domain size, undo
@@ -46,10 +24,10 @@ public class LastRemainingMaskFactory extends SDKMaskFactory {
 				square.setLocked(false);
 				square.setValue(0);
 				board.updateConstraints();
-				
-				if ( !isLastRemaining(board,square) )
-					throw new FailingRemoveException("Causes other square's domain to be too large");
-				
+				for ( SDKSquare square2 : squares ) {
+					if ( square2.getPossible().size() > 1 )
+						throw new FailingRemoveException("Causes other square's domain to be too large");
+				}
 				mask.set(square.row, square.col, false);
 			} catch (FailingRemoveException e) {
 				// reset square before the remove
