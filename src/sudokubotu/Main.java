@@ -59,6 +59,7 @@ public class Main extends javax.swing.JFrame {
     }
 
     private void solveBoard() {
+        clearBoard();
         SudokuBot solver = new SudokuBot(currentBoard);
         currentBoard = solver.getSolution();
         redrawBoard();
