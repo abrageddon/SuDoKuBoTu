@@ -79,6 +79,7 @@ public class SDKBoard {
         for (SDKSquare s : generated.getAllSquares()) {
             int val = solution.getCellValue(s.row, s.col);
             s.setValue(val);
+            s.setLocked(true);
         }
 
         return generated;
@@ -516,4 +517,8 @@ public class SDKBoard {
         }
         return squares;
     }
+
+	public SDKSquare getSquare(int i, int j) {
+		return board[j][i];
+	}
 }

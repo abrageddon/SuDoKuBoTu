@@ -10,6 +10,11 @@ import diuf.sudoku.solver.checks.BruteForceAnalysis;
 public class SDKAnalysis {
 	private double difficulty = 0;
 	private String hardestRule = "";
+	private SDKMask mask;
+	
+	public void setMask(SDKMask mask) {
+		this.mask = mask;
+	}
 	
 	public static boolean hasUniqueSolution(SDKBoard b) {
 		diuf.sudoku.Grid grid = new Grid();
@@ -47,9 +52,13 @@ public class SDKAnalysis {
         }
 	}
 	public double getRank() {
-		return difficulty;
+		if ( mask == null )
+			return difficulty;
+		return mask.getDifficulty();
 	}
 	public String getHardestRule() {
-		return hardestRule;
+		if ( mask == null )
+			return hardestRule;
+		return mask.getRule();
 	}
 }

@@ -21,6 +21,7 @@ public class Main extends javax.swing.JFrame {
 
     private SDKBoard currentBoard;
     private boolean editMode = false;
+	private SDKMask lastMask;
 
     /** Creates new form MainWindow */
     public Main() {
@@ -79,22 +80,37 @@ public class Main extends javax.swing.JFrame {
 
         SDKBoard generated = SDKBoard.generateSolvedBoard();
         SDKMask mask = null;
-
-        if (options[0] == answer) {
-            mask = LastRemainingMaskFactory.createMaskForBoard(generated, generated.getN() * generated.getN());
-        } else if (options[1] == answer) {
-            mask = HiddenSingleMaskFactory.createMaskForBoard(generated, generated.getN() * generated.getN());
-        } else if (options[2] == answer) {
-            mask = DirectHiddenPairMaskFactory.createMaskForBoard(generated, generated.getN() * generated.getN());
-        } else if (options[3] == answer) {
-            mask = NakedSingleMaskFactory.createMaskForBoard(generated, generated.getN() * generated.getN());
-        } /* else if (options[4] == answer) {
-            mask = DirectHiddenTripletMaskFactory.createMaskForBoard(generated, generated.getN() * generated.getN());
-        }*/
-
+        lastMask = null;
+        
+		try {
+	        if (options[0] == answer) {
+	            mask = LastRemainingMaskFactory.createMaskForBoard(generated, generated.getN() * generated.getN());
+	        } else if (options[1] == answer) {
+	            mask = HiddenSingleMaskFactory.createMaskForBoard(generated, generated.getN() * generated.getN());
+	        } else if (options[2] == answer) {
+	        	mask = DirectHiddenPairMaskFactory.createMaskForBoard(generated, generated.getN() * generated.getN());
+	        	
+	        } else if (options[3] == answer) {
+	            mask = NakedSingleMaskFactory.createMaskForBoard(generated, generated.getN() * generated.getN());
+	        } /* else if (options[4] == answer) {
+	            mask = DirectHiddenTripletMaskFactory.createMaskForBoard(generated, generated.getN() * generated.getN());
+	        }*/
+	    } catch (MaxRunException e) {
+	    	generated = SDKBoard.generateSolvedBoard();
+	    	SDKBoard itBoard = new SDKBoard(generated.copyBoard());
+	    	for(int i = 0; i < 10; i++) {
+	    		mask = LastRemainingMaskFactory.createMaskForBoard(itBoard, generated.getN()*generated.getN());
+	    		itBoard = mask.applyTo(itBoard);
+	    	}
+	    	lastMask = (SDKMask) e.v;
+	    }
+        
         if (mask != null) {
             clearBoard();
             currentBoard = mask.applyTo(generated);
+        }
+        else {
+        	System.out.println("mask is null");
         }
         endEdit();
         initBoard();
@@ -402,6 +418,7 @@ public class Main extends javax.swing.JFrame {
 
     private void rankBoard() {
         SDKAnalysis rank = new SDKAnalysis(currentBoard);
+        rank.setMask(lastMask);
         // TODO popup rank
         System.out.println("hardest rule: " + rank.getHardestRule());
         System.out.println("difficulty: " + rank.getRank());

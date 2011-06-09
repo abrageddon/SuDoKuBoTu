@@ -13,12 +13,17 @@ public class LastRemainingMaskFactory extends SDKMaskFactory {
 		SDKMask mask = new SDKMask();
 		// randomly choose a position if removing position causes another to have one less than max domain size, undo
 		SDKBoard board = new SDKBoard(solvedBoard.copyBoard());
+		board.updateConstraints();
 		LinkedList<SDKSquare> squares = board.getAllSquares();
 		
 		Collections.shuffle(squares);
 		
 		for ( SDKSquare square : squares ) {
 			int value = square.getValue();
+			if(value == 0) {
+				mask.set(square.row, square.col, false);
+				continue;
+			}
 			try {
 				if ( maxRemoved-- < 0 )
 					break;

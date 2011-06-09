@@ -1,5 +1,6 @@
 package sudokubotu;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -17,7 +18,7 @@ public class HiddenSingleMaskFactory extends SDKMaskFactory {
 	private static class HSVertexExpander implements VertexExpander<SDKMask> {
 		
 		@Override
-		public Iterable<SDKMask> expand(SDKMask mask) {
+		public Collection<SDKMask> expand(SDKMask mask) {
 			LinkedList<SDKMask> masks = new LinkedList<SDKMask>();
 			LinkedList<SDKSquare> squares = mask.mask.getAllSquaresWithClues();
 			for(SDKSquare s : squares) {
@@ -90,7 +91,7 @@ public class HiddenSingleMaskFactory extends SDKMaskFactory {
 		for(SDKSquare s2 : zsqrs)
 			zonePossibles.removeAll(s2.getPossible());
 		
-		return rowPossibles.size() + colPossibles.size() + zonePossibles.size() == 1;
+		return rowPossibles.size() == 1 || colPossibles.size() == 1 || zonePossibles.size() == 1;
 	}
 	
 	public static SDKMask createMaskForBoard(SDKBoard solvedBoard,int maxRemoved) {
@@ -112,7 +113,11 @@ public class HiddenSingleMaskFactory extends SDKMaskFactory {
 			new HSGoalCondition(board), 
 			new HSVertexExpander()
 		);
+		try {
+			return dgs.getGoalState();
+		} catch (MaxRunException e) {
+			return mask;
+		}
 		
-		return dgs.getGoalState();
 	}
 }

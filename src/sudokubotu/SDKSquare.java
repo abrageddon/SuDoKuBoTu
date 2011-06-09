@@ -74,6 +74,10 @@ public class SDKSquare {
         return possible.contains(posVal);
     }
 
+    public void setPossible(HashSet<Integer> possible) {
+    	this.possible = (HashSet<Integer>) possible.clone();
+    }
+    
     public HashSet<Integer> getPossible (){
         // Return a copy of possible values
         HashSet<Integer> ret = new HashSet<Integer>((possible!=null?possible.size():0));
