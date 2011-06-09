@@ -48,7 +48,7 @@ public class SudokuBot {
     }
 
     public double getBoardDifficulty() {
-        // TODO calculate difficulty
+        // calculate difficulty
         diuf.sudoku.Grid grid = new Grid();
         BruteForceAnalysis bfa = new BruteForceAnalysis(false);
         for (SDKSquare s : board.getAllSquares()) {
@@ -81,10 +81,6 @@ public class SudokuBot {
 
         while (!solver.isSolved()) {
             Point mcv = mostConstrainedValue();
-
-            //DEBUG
-//            System.out.println(mcv + " <-mcv- " + solver.getSquarePossible(mcv.x, mcv.y));
-
             if (!setSoleCandidate(mcv)) {
                 return false;
             } // fail if cant be solved by direct constraint checking
@@ -100,13 +96,7 @@ public class SudokuBot {
             Iterator value = solver.getSquarePossible(mcv.x, mcv.y).iterator();
             if (value.hasNext()) {
                 int soleCandidate = (Integer) value.next();
-
-                //DEBUG
-//                System.out.println(mcv + " -try-> " + soleCandidate);
-
                 solver.setSquareValue(mcv.x, mcv.y, soleCandidate);
-
-
                 value.remove();
             }
         } else {
@@ -171,7 +161,7 @@ public class SudokuBot {
     }
 
     private boolean solveReverse(int i, int j, int[][] cells) {
-        // TODO reverse solve
+        // reverse solve
         // i and j start at N-1 for the board
         if (i == -1) {
             i = solver.getN() - 1;

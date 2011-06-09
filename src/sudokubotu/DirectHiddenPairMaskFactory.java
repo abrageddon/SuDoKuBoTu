@@ -3,7 +3,6 @@ package sudokubotu;
 import java.util.HashSet;
 import java.util.LinkedList;
 
-import diuf.sudoku.generator.Point;
 
 
 // Graph traversal

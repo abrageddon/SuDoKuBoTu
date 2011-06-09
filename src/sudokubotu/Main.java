@@ -402,9 +402,10 @@ public class Main extends javax.swing.JFrame {
 
     private void rankBoard() {
         SDKAnalysis rank = new SDKAnalysis(currentBoard);
-        // TODO popup rank
-        System.out.println("hardest rule: " + rank.getHardestRule());
-        System.out.println("difficulty: " + rank.getRank());
+        String rankMesg = "Hardest Rule: " + rank.getHardestRule() +
+                        "\nDifficulty:         " + rank.getRank();
+        JOptionPane.showMessageDialog(rootPane, rankMesg, "Board Rank", JOptionPane.INFORMATION_MESSAGE);
+        System.out.println(rankMesg);
     }
 
 	private void editButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editButtonActionPerformed
