@@ -1,5 +1,6 @@
 package sudokubotu;
 
+import java.util.Collection;
 import java.util.HashSet;
 
 public class DepthGraphSearch<E> {
@@ -9,6 +10,7 @@ public class DepthGraphSearch<E> {
 	private Condition<E> gCond;
 	private VertexExpander<E> vExp;
 	private E startState;
+	private int maxRun = 0;
 	
 	public DepthGraphSearch(E startState, Condition<E> fCond,Condition<E> gCond,VertexExpander<E> vExp) {
 		this.startState = startState;
@@ -17,15 +19,19 @@ public class DepthGraphSearch<E> {
 		this.vExp = vExp;
 	}
 	
-	public E getGoalState() {
+	public E getGoalState() throws MaxRunException {
 		recDepthSearch(startState);
 		return goal;
 	}
 	
-	public void recDepthSearch(E vertex) {
-		if ( goal != null || explored.contains(vertex))
+	public void recDepthSearch(E vertex) throws MaxRunException {
+		if ( goal != null )
 			return;
-		Iterable<E> i = vExp.expand(vertex);
+		if ( maxRun++ > 300 ) {
+			throw new MaxRunException(vertex);
+		}
+	
+		Collection<E> i = vExp.expand(vertex);
 		explored.add(vertex);
 		for(E e : i) {
 			if (explored.contains(e)) {

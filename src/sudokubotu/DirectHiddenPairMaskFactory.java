@@ -1,8 +1,9 @@
 package sudokubotu;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
-
 
 
 // Graph traversal
@@ -18,21 +19,25 @@ public class DirectHiddenPairMaskFactory extends SDKMaskFactory {
 	private static class DHPVertexExpander implements VertexExpander<SDKMask> {
 		
 		@Override
-		public Iterable<SDKMask> expand(SDKMask mask) {
+		public Collection<SDKMask> expand(SDKMask mask) {
 			LinkedList<SDKMask> masks = new LinkedList<SDKMask>();
 			LinkedList<SDKSquare> squares = mask.mask.getAllSquaresWithClues();
+			if (squares.size() < 20)
+				return masks;
 			for(SDKSquare s : squares) {
 				SDKMask nextMask = new SDKMask();
 				nextMask.mask = new SDKBoard(mask.mask.copyBoard());
 				nextMask.set(s.row, s.col, false);
 				masks.add(nextMask);
 			}
+			Collections.shuffle(masks);
+			
 			return masks;
 		}
 		
 	}
 	
-	private static class DHPGoalCondition implements Condition<SDKMask> {
+	public static class DHPGoalCondition implements Condition<SDKMask> {
 
 		SDKBoard board;
 		public DHPGoalCondition(SDKBoard board) {
@@ -41,15 +46,26 @@ public class DirectHiddenPairMaskFactory extends SDKMaskFactory {
 		@Override
 		public boolean satisfiedWith(SDKMask e) {
 			SDKBoard tempBoard = e.applyTo(board);
-			tempBoard.updateConstraints();
+			
+			boolean hasDirectHiddenPair = false;
 			for(SDKSquare s : tempBoard.getAllSquares()) {
-				boolean isHiddenSingle = HiddenSingleMaskFactory.isHiddenSingle(s, board);
-				boolean isLastRemaining = LastRemainingMaskFactory.isLastRemaining(board, s);
-				boolean isDirectHiddenPair = isDirectHiddenPair(s,board);
-				if (!isHiddenSingle && !isLastRemaining && isDirectHiddenPair)
-					return true;
+				if ( isDirectHiddenPair(s, tempBoard) ) {
+					hasDirectHiddenPair = true;
+					break;
+				}
 			}
-			return false;
+			
+			if ( !hasDirectHiddenPair )
+				return false;
+			
+			for(SDKSquare s : tempBoard.getAllSquares()) {
+				boolean isHiddenSingle = HiddenSingleMaskFactory.isHiddenSingle(s, tempBoard);
+				boolean isLastRemaining = LastRemainingMaskFactory.isLastRemaining(tempBoard, s);
+				if ( isHiddenSingle || isLastRemaining )
+					return false;
+			}
+			
+			return true;
 		}
 		
 	}
@@ -65,25 +81,29 @@ public class DirectHiddenPairMaskFactory extends SDKMaskFactory {
 		@Override
 		public boolean satisfiedWith(SDKMask e) {
 			SDKBoard tempBoard = e.applyTo(board);
-			
 			return !SDKAnalysis.hasUniqueSolution(tempBoard);
 		}
 		
 	}
 	
-	public static SDKMask createMaskForBoard(SDKBoard solvedBoard,int maxRemoved) {
+	public static SDKMask createMaskForBoard(SDKBoard solvedBoard,int maxRemoved) throws MaxRunException {
 		SDKBoard board = new SDKBoard(solvedBoard.copyBoard());
-		SDKMask mask = HiddenSingleMaskFactory.createMaskForBoard(solvedBoard, maxRemoved);
-		board = mask.applyTo(board);
-		
-		DepthGraphSearch<SDKMask> dgs = new DepthGraphSearch<SDKMask>(
+//		SDKMask mask = HiddenSingleMaskFactory.createMaskForBoard(solvedBoard, maxRemoved);
+//		board = mask.applyTo(board);
+		SDKMask mask = new SDKMask();
+		mask.rule = "Direct Hidden Pair";
+		mask.difficulty = 2.0;
+		FringeGraphSearch<SDKMask> dgs = new FringeGraphSearch<SDKMask>(
 			mask,
 			new DHPFailCondition(board), 
 			new DHPGoalCondition(board), 
 			new DHPVertexExpander()
 		);
+//		return mask;
+		mask = dgs.getGoalState();
 		
-		return dgs.getGoalState();
+		
+		return mask;
 	}
 
 	public static boolean isDirectHiddenPair(SDKSquare s, SDKBoard board) {
@@ -98,38 +118,70 @@ public class DirectHiddenPairMaskFactory extends SDKMaskFactory {
 		boolean colHas = hasDirectPairThatSolves(csqrs,s,board);
 		boolean rowHas = hasDirectPairThatSolves(rsqrs,s,board);
 		
-		return ((zoneHas?1:0) + (colHas?1:0) + (rowHas?1:0) != 1);
+		//return ((zoneHas?1:0) + (colHas?1:0) + (rowHas?1:0) == 1);
+		return zoneHas || colHas || rowHas;
 	}
 
 	private static boolean hasDirectPairThatSolves( LinkedList<SDKSquare> sqrs, SDKSquare s, SDKBoard b ) {
 		HashSet<Integer> hs = new HashSet<Integer>();
-		for(SDKSquare s2 : sqrs) {
-			
-			hs.addAll(s.getPossible());
-			hs.retainAll(s2.getPossible());
-			if ( hs.size() == 2 ) {
-				HashSet<Integer> hs2 = new HashSet<Integer>();
-				for(SDKSquare s3 : sqrs) {
-					if (s2 == s3)
-						continue;
-					hs2.addAll(hs);
-					hs2.retainAll(s3.getPossible());
-					if (hs2.size() == 2) {
-						HashSet<Integer> sPossible = new HashSet<Integer>();
-						sPossible.addAll(s.getPossible());
-						sPossible.removeAll(hs2);
-						SDKSquare testSquare = new SDKSquare(s2.row, s2.col);
-						for(int i : testSquare.getPossible()) {
-							testSquare.addPossible(i);
-						}
-						if ( HiddenSingleMaskFactory.isHiddenSingle(testSquare, b) )
-							return true;
-					}
+		
+		//remove candidates that are not in the pair from the direct pair
+		//look for a square in the zone that has a lone candidate (a candidate that only it contains in the zone)
+		for(SDKSquare s1 : sqrs)
+		{
+			for(SDKSquare s2 : sqrs) {
+				if ( s1.equals(s2) )
+					continue;
+				HashSet<Integer> candidatePair = getCandidatePair(s1, s2, sqrs);
+				if ( candidatePair.size() == 2) {
+					LinkedList<SDKSquare> sqrs2 = (LinkedList<SDKSquare>) sqrs.clone();
+					sqrs2.remove(s1);
+					sqrs2.remove(s2);
 					
+					SDKSquare s11 = new SDKSquare(s1.row,s1.col);
+					SDKSquare s21 = new SDKSquare(s2.row,s2.col);
+					s11.setPossible(candidatePair);
+					s21.setPossible(candidatePair);
+					sqrs2.add(s11);
+					sqrs2.add(s21);
+					
+					if ( hasLoneCandidate(s,sqrs2) ) {
+						return true;
+					}
 				}
 			}
 		}
 		return false;
+	}
+
+	private static boolean hasLoneCandidate(SDKSquare s,
+			LinkedList<SDKSquare> sqrs ) {
+		HashSet<Integer> hs = s.getPossible();
+		for(SDKSquare s2 : sqrs)
+			hs.removeAll(s2.getPossible());
+		return hs.size() == 1;
+	}
+
+	private static HashSet<Integer> getCandidatePair(SDKSquare s1, SDKSquare s2,
+			LinkedList<SDKSquare> sqrs) {
+		HashSet<Integer> sharedSet = s1.getPossible();
+		sharedSet.retainAll(s2.getPossible());
+		
+		if ( sharedSet.size() < 2 )
+		{
+			sharedSet.clear();
+			return sharedSet;
+		}
+		
+		
+		LinkedList<SDKSquare> sqrs2 = (LinkedList<SDKSquare>) sqrs.clone();
+		sqrs2.remove(s1);
+		sqrs2.remove(s2);
+		//if one other sqrs has an intersection greater than one then return false
+		for (SDKSquare s : sqrs2) {
+			sharedSet.removeAll(s.getPossible());
+		}
+		return sharedSet;
 	}
 	
 }
