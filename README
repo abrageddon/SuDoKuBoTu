@@ -1,2 +1,4 @@
-Compile using Eclipse
-	Include entire src directory
+Use build.xml
+$ ant
+$ cd bin/
+$ java sudokubotu.Main
