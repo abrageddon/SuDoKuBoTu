@@ -32,8 +32,9 @@ public class SudokuBot {
                     System.out.println("Brute Force Solver Failed");
                 }
             }
-            System.out.println("Unique?" + isUnique());
-
+            if (board.getN() == 9) {
+                System.out.println("Unique?" + isUnique());
+            }
         }
 
         //Convert board to proper format
