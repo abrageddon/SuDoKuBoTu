@@ -522,7 +522,7 @@ public class SDKBoard {
     }
 
     SDKBoard getBaseBoard() {
-        SDKBoard ret = new SDKBoard();
+        SDKBoard ret = new SDKBoard(getN());
         for (int row = 0; row < getN(); row++) {
             for (int col = 0; col < getN(); col++) {
                 ret.setSquareValue(row, col,
