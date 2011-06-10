@@ -60,7 +60,7 @@ public class Main extends javax.swing.JFrame {
 
     private void solveBoard() {
         clearBoard();
-        SudokuBot solver = new SudokuBot(currentBoard);
+        SudokuBot solver = new SudokuBot(currentBoard.getBaseBoard());
         currentBoard = solver.getSolution();
         redrawBoard();
     }

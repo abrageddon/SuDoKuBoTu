@@ -500,7 +500,6 @@ public class SDKBoard {
 //    void rearrange() {
 //        // TODO pillar column row and ribbon permutations
 //    }
-
     public LinkedList<SDKSquare> getSquaresInRow(int row) {
 
         LinkedList<SDKSquare> squares = new LinkedList<SDKSquare>();
@@ -518,7 +517,22 @@ public class SDKBoard {
         return squares;
     }
 
-	public SDKSquare getSquare(int i, int j) {
-		return board[j][i];
-	}
+    public SDKSquare getSquare(int i, int j) {
+        return board[j][i];
+    }
+
+    SDKBoard getBaseBoard() {
+        SDKBoard ret = new SDKBoard();
+        for (int row = 0; row < getN(); row++) {
+            for (int col = 0; col < getN(); col++) {
+                ret.setSquareValue(row, col,
+                        ( board[row][col].isLocked() ? 0 : board[row][col].getValue() )
+                        );
+                if (board[row][col].isLocked()){
+                    ret.setSquareLock(row, col, true);
+                }
+            }
+        }
+        return ret;
+    }
 }
