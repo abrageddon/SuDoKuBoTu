@@ -525,10 +525,9 @@ public class SDKBoard {
         SDKBoard ret = new SDKBoard(getN());
         for (int row = 0; row < getN(); row++) {
             for (int col = 0; col < getN(); col++) {
-                ret.setSquareValue(row, col,
-                        ( board[row][col].isLocked() ? 0 : board[row][col].getValue() )
-                        );
-                if (board[row][col].isLocked()){
+                ret.setSquareLock(row, col, false);
+                ret.setSquareValue(row, col, board[row][col].getValue());
+                if (board[row][col].isLocked()) {
                     ret.setSquareLock(row, col, true);
                 }
             }
